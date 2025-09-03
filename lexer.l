@@ -2,6 +2,7 @@
 /*--------------- Definições ---------------*/
 #include <stdio.h>
 int line = 1;
+int column = 1;
 %}
 
 digit       [0-9]
@@ -9,18 +10,33 @@ letter      [a-zA-Z]
 keywords    (if|else|while|print|read|true|false)
 types       (int|bool)
 newline     [\n]
+space       [ ]
+tab         [\t]
 
 %%
 %{
     /*--------------- Regras ---------------*/
 %}
 
-{digit}    { printf("Digito: %s - Line: %d\n", yytext, line); }
-{letter}   { printf("Letra: %s - Line: %d\n", yytext, line); }
-{keywords} { printf("Keyword: %s - Line: %d\n", yytext, line); }
-{types}    { printf("Type: %s - Line: %d\n", yytext, line); }
+{digit} { 
+    printf("Digito: %s - Line: %d | Column: %d\n", yytext, line, column);
+}
 
-{newline}  { line++; }
+{letter} {
+    printf("Letra: %s - Line: %d | Column: %d\n", yytext, line, column);
+}
+
+{keywords} {
+    printf("Keyword: %s - Line: %d | Column: %d\n", yytext, line, column);
+}
+
+{types} {
+    printf("Type: %s - Line: %d | Column: %d\n", yytext, line, column);
+}
+
+{newline}  { line++; column = 1; }
+{space} { column++; }
+{tab} { column += 4; }
 
 %%
 /*--------------- Código Auxiliar ---------------*/
