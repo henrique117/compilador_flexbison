@@ -64,6 +64,10 @@ id          {letters}({letters}|{digits})*
 {space} { column++; }
 {tab} { column += 4; }
 
+. { 
+    printf("ERRO: %s - Line: %d | Column: %d\n", yytext, line, column++);
+}
+
 %%
 /*--------------- Código Auxiliar ---------------*/
 int main(int argc, char *argv[]) {
