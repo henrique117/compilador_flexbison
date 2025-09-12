@@ -1,10 +1,8 @@
-a
-B
-    bool bool
- if
-2
--2 
-&&
-!
-==
-~~
+int x = 10;
+bool flag = true;
+if (x >= 5 && flag) {
+    print(x);
+} else {
+    read(y);
+    z1 = x + 20;
+}

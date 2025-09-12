@@ -1,52 +1,54 @@
 %{
-/*--------------- Definições ---------------*/
+/*--------------- INCLUDES E DEFINIÇÕES GERAIS ---------------*/
+// Inclusão das bibliotecas padrão necessárias
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define TOKEN_EOF "<EOF>"
+#define TOKEN_EOF "<EOF>" // Token especial para fim de arquivo
 
+// Variáveis globais para rastrear linha e coluna do token atual
 int line = 1;
 int column = 1;
 
-// Estrutura para um símbolo
+// Estrutura para armazenar um símbolo (token reconhecido)
 typedef struct {
     char token[50];   // Nome do Token (ex: <ID>, <NUMBER>, <TYPE>)
-    char value[50];   // Valor do lexema
-    int line;         // Linha
-    int column;       // Coluna
+    char value[50];   // Valor do lexema reconhecido
+    int line;         // Linha onde o token foi encontrado
+    int column;       // Coluna onde o token foi encontrado
 } Symbol;
 
-// Estrutura da tabela de símbolos
+// Estrutura da tabela de símbolos (dinâmica)
 typedef struct {
-    Symbol *symbols;  // Array de símbolos
-    int size;         // Quantos já foram inseridos
-    int capacity;     // Capacidade atual
+    Symbol *symbols;  // Array dinâmico de símbolos
+    int size;         // Quantos símbolos já foram inseridos
+    int capacity;     // Capacidade atual do array
 } SymbolTable;
 
-// Inicializa a tabela
+// Inicializa a tabela de símbolos
 void initTable(SymbolTable *table) {
     table->size = 0;
     table->capacity = 2;
     table->symbols = malloc(table->capacity * sizeof(Symbol));
 }
 
-// Adiciona um símbolo
+// Adiciona um símbolo à tabela, expandindo se necessário
 void addSymbol(SymbolTable *table, const char *token, const char *value, int line, int column) {
-    // Aumenta se necessário
+    // Expande o array se necessário
     if (table->size == table->capacity) {
         table->capacity *= 2;
         table->symbols = realloc(table->symbols, table->capacity * sizeof(Symbol));
     }
-
+    // Copia os dados do símbolo
     strcpy(table->symbols[table->size].token, token);
     strcpy(table->symbols[table->size].value, value);
-    table->symbols[table->size].line = line;       // agora certo: int recebe int
-    table->symbols[table->size].column = column;   // idem
+    table->symbols[table->size].line = line;
+    table->symbols[table->size].column = column;
     table->size++;
 }
 
-// Mostra a tabela
+// Mostra todos os símbolos reconhecidos
 void showTable(SymbolTable *table) {
     printf("\n---- Tabela de Simbolos ----\n");
     for (int i = 0; i < table->size; i++) {
@@ -60,81 +62,91 @@ void showTable(SymbolTable *table) {
     printf("----------------------------\n");
 }
 
-// Libera memória
+// Libera a memória da tabela de símbolos
 void freeTable(SymbolTable *table) {
     free(table->symbols);
     table->symbols = NULL;
     table->size = table->capacity = 0;
 }
 
-SymbolTable table;
+SymbolTable table; // Instância global da tabela de símbolos
 %}
 
-digits      -?[0-9]+
-letters     [a-zA-Z]+
-keywords    (if|else|while|print|read|true|false)
-types       (int|bool)
-newline     [\n]
-space       [ ]
-tab         [\t]
-symbols     (;|,|\(|\)|\{|\})
-relop       (==|!=|<=|>=|<|>)
-logicop     (&&|\|\||!)
-arithop     (\+|\-|\*|\/|%)
-id          {letters}({letters}|{digits})*
-assignment  [=]
+/*--------------- DEFINIÇÕES DE PADRÕES (EXPRESSÕES REGULARES) ---------------*/
+digits      -?[0-9]+                         
+letters     [a-zA-Z]+                       
+keywords    (if|else|while|print|read|true|false) 
+types       (int|bool)                      
+newline     [\n]                            
+space       [ ]                             
+tab         [\t]                            
+symbols     (;|,|\(|\)|\{|\})              
+relop       (==|!=|<=|>=|<|>)               
+logicop     (&&|\|\||!)                     
+arithop     (\+|\-|\*|\/|%)                 
+id          {letters}({letters}|{digits})*  
+assignment  [=]                             
 
 %%
 
 {keywords} {
+    /* Palavra reservada */
     printf("Keyword: %s - Line: %d | Column: %d\n", yytext, line, column);
     addSymbol(&table, "<KEYWORD>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {types} {
+    /* Tipo de dado */
     printf("Type: %s - Line: %d | Column: %d\n", yytext, line, column);
     addSymbol(&table, "<TYPE>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {id} {
+    /* Identificador */
     printf("ID: %s - Line: %d | Column: %d\n", yytext, line, column);
     addSymbol(&table, "<ID>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {digits} { 
+    /* Número inteiro */
     printf("Number: %s - Line: %d | Column: %d\n", yytext, line, column);
     addSymbol(&table, "<NUMBER>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {arithop} {
+    /* Operador aritmético */
     printf("Arithmetic Operator: %s - Line: %d | Column: %d\n", yytext, line, column);
     addSymbol(&table, "<ARITHOP>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {relop} {
+    /* Operador relacional */
     printf("Relational Operator: %s - Line: %d | Column: %d\n", yytext, line, column);
     addSymbol(&table, "<RELOP>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {logicop} {
+    /* Operador lógico */
     printf("Logical Operator: %s - Line: %d | Column: %d\n", yytext, line, column);
     addSymbol(&table, "<LOGICOP>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {symbols} {
+    /* Símbolo especial */
     printf("Symbol: %s - Line: %d | Column: %d\n", yytext, line, column);
     addSymbol(&table, "<SYMBOL>", yytext, line, column);
     column++;
 }
 
 {assignment} {
+    /* Operador de atribuição */
     printf("Assignment: %s - Line: %d | Column: %d\n", yytext, line, column);
     addSymbol(&table, "<ASSIGNMENT>", yytext, line, column);
     column++;
@@ -145,11 +157,13 @@ assignment  [=]
 {tab}      { column += 4; }
 
 . { 
+    /* Erro léxico */
     printf("ERRO: %s - Line: %d | Column: %d\n", yytext, line, column);
     column += strlen(yytext);
 }
 
 <<EOF>> {
+    /* Fim de arquivo */
     printf("Fim de arquivo - Line: %d | Column: %d\n", line, column);
     addSymbol(&table, TOKEN_EOF, "EOF", line, column);
     return 0;
@@ -157,7 +171,9 @@ assignment  [=]
 
 %%
 
-/*--------------- Código Auxiliar ---------------*/
+/*--------------- FUNÇÕES AUXILIARES E MAIN ---------------*/
+
+// Função principal: inicializa tabela, abre arquivo, executa análise léxica e mostra tabela
 int main(int argc, char *argv[]) {
     initTable(&table);
 
@@ -176,6 +192,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+// Função obrigatória para Flex
 int yywrap() {
     return 1;
 }
