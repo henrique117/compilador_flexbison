@@ -17,6 +17,7 @@ relop       (==|!=|<=|>=|<|>)
 logicop     (&&|\|\||!)
 arithop     (\+|\-|\*|\/|%)
 id          {letters}({letters}|{digits})*
+assignment  [=]
 
 %%
 %{
