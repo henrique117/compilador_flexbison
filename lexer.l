@@ -16,19 +16,12 @@ symbols     (;|,|\(|\)|\{|\})
 relop       (==|!=|<=|>=|<|>)
 logicop     (&&|\|\||!)
 arithop     (\+|\-|\*|\/|%)
+id          {letters}({letters}|{digits})*
 
 %%
 %{
     /*--------------- Regras ---------------*/
 %}
-
-{digit} { 
-    printf("Digito: %s - Line: %d | Column: %d\n", yytext, line, column++);
-}
-
-{letter} {
-    printf("Letra: %s - Line: %d | Column: %d\n", yytext, line, column++);
-}
 
 {keywords} {
     printf("Keyword: %s - Line: %d | Column: %d\n", yytext, line, column);
@@ -40,8 +33,17 @@ arithop     (\+|\-|\*|\/|%)
     column += strlen(yytext);
 }
 
-{symbols} {
-    printf("Symbol: %s - Line: %d | Column: %d\n", yytext, line, column++);
+{id} {
+    printf("ID: %s - Line: %d | Column: %d\n", yytext, line, column);
+    column += strlen(yytext);
+}
+
+{digits} { 
+    printf("Digito: %s - Line: %d | Column: %d\n", yytext, line, column++);
+}
+
+{arithop} {
+    printf("Arithmetic Operator: %s - Line: %d | Column: %d\n", yytext, line, column++);
 }
 
 {relop} {
@@ -54,8 +56,8 @@ arithop     (\+|\-|\*|\/|%)
     column += strlen(yytext);
 }
 
-{arithop} {
-    printf("Arithmetic Operator: %s - Line: %d | Column: %d\n", yytext, line, column++);
+{symbols} {
+    printf("Symbol: %s - Line: %d | Column: %d\n", yytext, line, column++);
 }
 
 {newline}  { line++; column = 1; }
