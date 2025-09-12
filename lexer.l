@@ -5,7 +5,7 @@ int line = 1;
 int column = 1;
 %}
 
-digit       [0-9]
+digit       -?[0-9]+
 letter      [a-zA-Z]
 keywords    (if|else|while|print|read|true|false)
 types       (int|bool)
@@ -19,11 +19,11 @@ tab         [\t]
 %}
 
 {digit} { 
-    printf("Digito: %s - Line: %d | Column: %d\n", yytext, line, column);
+    printf("Digito: %s - Line: %d | Column: %d\n", yytext, line, column++);
 }
 
 {letter} {
-    printf("Letra: %s - Line: %d | Column: %d\n", yytext, line, column);
+    printf("Letra: %s - Line: %d | Column: %d\n", yytext, line, column++);
 }
 
 {keywords} {

@@ -1,5 +1,6 @@
 a
 B
-    bool
+    bool bool
  if
 2
+-2
