@@ -5,17 +5,17 @@ int line = 1;
 int column = 1;
 %}
 
-digit       -?[0-9]+
-letter      [a-zA-Z]
+digits      -?[0-9]+
+letters     [a-zA-Z]+
 keywords    (if|else|while|print|read|true|false)
 types       (int|bool)
 newline     [\n]
 space       [ ]
 tab         [\t]
-symbols    (;|,|\(|\)|\{|\})
-relop     (==|!=|<=|>=|<|>)
-logicop    (&&|\|\||!)
-arithop   (\+|\-|\*|\/|%)
+symbols     (;|,|\(|\)|\{|\})
+relop       (==|!=|<=|>=|<|>)
+logicop     (&&|\|\||!)
+arithop     (\+|\-|\*|\/|%)
 
 %%
 %{
@@ -32,20 +32,28 @@ arithop   (\+|\-|\*|\/|%)
 
 {keywords} {
     printf("Keyword: %s - Line: %d | Column: %d\n", yytext, line, column);
+    column += strlen(yytext);
 }
 
 {types} {
     printf("Type: %s - Line: %d | Column: %d\n", yytext, line, column);
+    column += strlen(yytext);
 }
+
 {symbols} {
     printf("Symbol: %s - Line: %d | Column: %d\n", yytext, line, column++);
 }
+
 {relop} {
-    printf("Relational Operator: %s - Line: %d | Column: %d\n", yytext, line, column++);
+    printf("Relational Operator: %s - Line: %d | Column: %d\n", yytext, line, column);
+    column += strlen(yytext);
 }
+
 {logicop} {
-    printf("Logical Operator: %s - Line: %d | Column: %d\n", yytext, line, column++);
+    printf("Logical Operator: %s - Line: %d | Column: %d\n", yytext, line, column);
+    column += strlen(yytext);
 }
+
 {arithop} {
     printf("Arithmetic Operator: %s - Line: %d | Column: %d\n", yytext, line, column++);
 }
