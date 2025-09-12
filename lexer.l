@@ -12,6 +12,10 @@ types       (int|bool)
 newline     [\n]
 space       [ ]
 tab         [\t]
+symbols    (;|,|\(|\)|\{|\})
+relop     (==|!=|<=|>=|<|>)
+logicop    (&&|\|\||!)
+arithop   (\+|\-|\*|\/|%)
 
 %%
 %{
@@ -32,6 +36,18 @@ tab         [\t]
 
 {types} {
     printf("Type: %s - Line: %d | Column: %d\n", yytext, line, column);
+}
+{symbols} {
+    printf("Symbol: %s - Line: %d | Column: %d\n", yytext, line, column++);
+}
+{relop} {
+    printf("Relational Operator: %s - Line: %d | Column: %d\n", yytext, line, column++);
+}
+{logicop} {
+    printf("Logical Operator: %s - Line: %d | Column: %d\n", yytext, line, column++);
+}
+{arithop} {
+    printf("Arithmetic Operator: %s - Line: %d | Column: %d\n", yytext, line, column++);
 }
 
 {newline}  { line++; column = 1; }
