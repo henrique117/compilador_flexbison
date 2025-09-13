@@ -1,4 +1,4 @@
-int x_x = 10;
+int _x_x = 10; 
 bool flag = true;
 if (x >= 5 && flag) {
     print(x);

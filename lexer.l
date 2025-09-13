@@ -73,6 +73,7 @@ SymbolTable table; // Instância global da tabela de símbolos
 %}
 
 /*--------------- DEFINIÇÕES DE PADRÕES (EXPRESSÕES REGULARES) ---------------*/
+
 digits      -?[0-9]+                         
 letters     [a-zA-Z]+                       
 keywords    (if|else|while|print|read|true|false) 
@@ -84,9 +85,10 @@ symbols     (;|,|\(|\)|\{|\})
 relop       (==|!=|<=|>=|<|>)               
 logicop     (&&|\|\||!)                     
 arithop     (\+|\-|\*|\/|%)                 
-id          {letters}({letters}|{digits}|[_])*
+id          ({letters}|[_])({letters}|{digits}|[_])*
 assignment  [=]
 comment     ("//".*|"/*"([^*]|\*+[^*/])*\*+"/")
+error1      {digits}({letters}|[_])+
 
 %%
 
@@ -163,7 +165,13 @@ comment     ("//".*|"/*"([^*]|\*+[^*/])*\*+"/")
 
 . { 
     /* Erro léxico */
-    printf("ERRO: %s - Line: %d | Column: %d\n", yytext, line, column);
+    printf("ERRO: %s - Line: %d | Column: %d - Message: Unexpected token: \"%s\". Lexical Error.\n", yytext, line, column, yytext);
+    column += strlen(yytext);
+}
+
+{error1} {
+    /* Erro léxico */
+    printf("ERRO: %s - Line: %d | Column: %d - Message: ID starting with a number: \"%s\". Lexical Error.\n", yytext, line, column, yytext);
     column += strlen(yytext);
 }
 
