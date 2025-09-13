@@ -100,42 +100,49 @@ error1      {digits}({letters}|[_])+
 
 
 {if} {
+    /* Palavra reservada IF */
     printf("Keyword IF: %s - Line: %d | Column: %d\n", yytext, line, column);
     addSymbol(&table, "<IF>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {else} {
+    /* Palavra reservada ELSE */
     printf("Keyword ELSE: %s - Line: %d | Column: %d\n", yytext, line, column);
     addSymbol(&table, "<ELSE>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {while} {
+    /* Palavra reservada WHILE */
     printf("Keyword WHILE: %s - Line: %d | Column: %d\n", yytext, line, column);
     addSymbol(&table, "<WHILE>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {print} {
+    /* Palavra reservada PRINT */
     printf("Keyword PRINT: %s - Line: %d | Column: %d\n", yytext, line, column);
     addSymbol(&table, "<PRINT>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {read} {
+    /* Palavra reservada READ */
     printf("Keyword READ: %s - Line: %d | Column: %d\n", yytext, line, column);
     addSymbol(&table, "<READ>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {true} {
+    /* Palavra reservada TRUE */
     printf("Keyword TRUE: %s - Line: %d | Column: %d\n", yytext, line, column);
     addSymbol(&table, "<TRUE>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {false} {
+    /* Palavra reservada FALSE */
     printf("Keyword FALSE: %s - Line: %d | Column: %d\n", yytext, line, column);
     addSymbol(&table, "<FALSE>", yytext, line, column);
     column += strlen(yytext);
@@ -198,6 +205,7 @@ error1      {digits}({letters}|[_])+
 }
 
 {comment} {
+    /* Ignorando Comentários, mas contando linha */
     column += strlen(yytext);
 }
 
