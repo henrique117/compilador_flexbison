@@ -76,7 +76,13 @@ SymbolTable table; // Instância global da tabela de símbolos
 
 digits      -?[0-9]+                         
 letters     [a-zA-Z]+                       
-keywords    (if|else|while|print|read|true|false) 
+if          "if"
+else        "else"
+while       "while"
+print       "print"
+read        "read"
+true        "true"
+false       "false"
 types       (int|bool)                      
 newline     [\n]                            
 space       [ ]                             
@@ -92,10 +98,46 @@ error1      {digits}({letters}|[_])+
 
 %%
 
-{keywords} {
-    /* Palavra reservada */
-    printf("Keyword: %s - Line: %d | Column: %d\n", yytext, line, column);
-    addSymbol(&table, "<KEYWORD>", yytext, line, column);
+
+{if} {
+    printf("Keyword IF: %s - Line: %d | Column: %d\n", yytext, line, column);
+    addSymbol(&table, "<IF>", yytext, line, column);
+    column += strlen(yytext);
+}
+
+{else} {
+    printf("Keyword ELSE: %s - Line: %d | Column: %d\n", yytext, line, column);
+    addSymbol(&table, "<ELSE>", yytext, line, column);
+    column += strlen(yytext);
+}
+
+{while} {
+    printf("Keyword WHILE: %s - Line: %d | Column: %d\n", yytext, line, column);
+    addSymbol(&table, "<WHILE>", yytext, line, column);
+    column += strlen(yytext);
+}
+
+{print} {
+    printf("Keyword PRINT: %s - Line: %d | Column: %d\n", yytext, line, column);
+    addSymbol(&table, "<PRINT>", yytext, line, column);
+    column += strlen(yytext);
+}
+
+{read} {
+    printf("Keyword READ: %s - Line: %d | Column: %d\n", yytext, line, column);
+    addSymbol(&table, "<READ>", yytext, line, column);
+    column += strlen(yytext);
+}
+
+{true} {
+    printf("Keyword TRUE: %s - Line: %d | Column: %d\n", yytext, line, column);
+    addSymbol(&table, "<TRUE>", yytext, line, column);
+    column += strlen(yytext);
+}
+
+{false} {
+    printf("Keyword FALSE: %s - Line: %d | Column: %d\n", yytext, line, column);
+    addSymbol(&table, "<FALSE>", yytext, line, column);
     column += strlen(yytext);
 }
 

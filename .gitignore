@@ -2,3 +2,4 @@ lex.yy.c
 lexer.exe
 lexer.o
 a.exe
+saida.txt
