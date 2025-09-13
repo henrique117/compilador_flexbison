@@ -1,4 +1,4 @@
-int x = 10;
+int x_x = 10;
 bool flag = true;
 if (x >= 5 && flag) {
     print(x);
@@ -6,3 +6,8 @@ if (x >= 5 && flag) {
     read(y);
     z1 = x + 20;
 }
+
+// Alou Alou
+/* Ola munbdo */ Oi tudo bom?
+
+10

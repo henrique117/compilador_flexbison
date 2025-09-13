@@ -84,8 +84,9 @@ symbols     (;|,|\(|\)|\{|\})
 relop       (==|!=|<=|>=|<|>)               
 logicop     (&&|\|\||!)                     
 arithop     (\+|\-|\*|\/|%)                 
-id          {letters}({letters}|{digits})*  
-assignment  [=]                             
+id          {letters}({letters}|{digits}|[_])*
+assignment  [=]
+comment     ("//".*|"/*"([^*]|\*+[^*/])*\*+"/")
 
 %%
 
@@ -152,6 +153,10 @@ assignment  [=]
     column++;
 }
 
+{comment} {
+    column += strlen(yytext);
+}
+
 {newline}  { line++; column = 1; }
 {space}    { column++; }
 {tab}      { column += 4; }
@@ -165,7 +170,6 @@ assignment  [=]
 <<EOF>> {
     /* Fim de arquivo */
     printf("Fim de arquivo - Line: %d | Column: %d\n", line, column);
-    addSymbol(&table, TOKEN_EOF, "EOF", line, column);
     return 0;
 }
 
