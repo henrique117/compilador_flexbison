@@ -1,13 +1,53 @@
-int _x_x = 10; 
-bool flag = true;
+int x = 10;
+bool flag = false;
 if (x >= 5 && flag) {
     print(x);
 } else {
     read(y);
     z1 = x + 20;
 }
+while (flag || x < 0) {
+    x = x - 1;
+}
 
-// Alou Alou
-/* Ola munbdo */ Oi tudo bom?
+// Teste de identificadores válidos e inválidos
+_x1
+abc_123
+_ // identificador válido
+1abc // erro léxico: identificador começando com número
+10abc // erro léxico: identificador começando com número
+
+// Teste de números inteiros
+123
+-456
+0
+
+// Teste de operadores
+a = b + c * d / e % f - g;
+h == i;
+j != k;
+l <= m;
+n >= o;
+p < q;
+r > s;
+t && u;
+v || w;
+!x;
+
+// Teste de símbolos especiais
+( ) { } ; ,
+
+// Teste de comentários
+// Comentário de linha
+/* Comentário de bloco */
+abc /* Comentário no meio */ def
+
+// Teste de espaços, tabs e novas linhas
+a      b	c
+d
+e
+
+// Teste de erro léxico: token inesperado
+@ # $ ~
 
 10
