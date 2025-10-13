@@ -83,14 +83,14 @@ print       "print"
 read        "read"
 true        "true"
 false       "false"
-types       (int|bool)                      
-newline     [\n]                            
-space       [ ]                             
-tab         [\t]                            
-symbols     (;|,|\(|\)|\{|\})              
-relop       (==|!=|<=|>=|<|>)               
-logicop     (&&|\|\||!)                     
-arithop     (\+|\-|\*|\/|%)                 
+types       (int|bool)
+newline     [\n]
+space       [ ]
+tab         [\t]
+symbols     (;|,|\(|\)|\{|\})
+relop       (==|!=|<=|>=|<|>)
+logicop     (&&|\|\||!)
+arithop     (\+|\-|\*|\/|%)
 id          ({letters}|[_])({letters}|{digits}|[_])*
 assignment  [=]
 comment     ("//".*|"/*"([^*]|\*+[^*/])*\*+"/")
@@ -206,7 +206,16 @@ error1      {digits}({letters}|[_])+
 
 {comment} {
     /* Ignorando Comentários, mas contando linha */
-    column += strlen(yytext);
+    for (int i = 0; yytext[i] != '\0'; i++) {
+        if (yytext[i] == '\n') {
+            line++;
+            column = 1;
+        } else if (yytext[i] == '\t') {
+            column += 4;
+        } else {
+            column++;
+        }
+    }
 }
 
 {newline}  { line++; column = 1; }
