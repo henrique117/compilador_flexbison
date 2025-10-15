@@ -48,6 +48,18 @@ void addSymbol(SymbolTable *table, const char *token, const char *value, int lin
     table->size++;
 }
 
+// 1 é Falsidade Ideologica e 0 é Moralmente Aceito
+int findSymbol(SymbolTable *table, const char *value) {
+    for (int i = 0; i < table->size; i++) {
+        // Compara apenas os identificadores que já foram inseridos
+        if (strcmp(table->symbols[i].token, "<ID>") == 0 && 
+            strcmp(table->symbols[i].value, value) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 // Mostra todos os símbolos reconhecidos
 void showTable(SymbolTable *table) {
     printf("\n---- Tabela de Simbolos ----\n");
@@ -74,8 +86,8 @@ SymbolTable table; // Instância global da tabela de símbolos
 
 /*--------------- DEFINIÇÕES DE PADRÕES (EXPRESSÕES REGULARES) ---------------*/
 
-digits      -?[0-9]+                         
-letters     [a-zA-Z]+                       
+digits      0|(-?[1-9][0-9]*)
+letters     [a-zA-Z]+
 if          "if"
 else        "else"
 while       "while"
@@ -102,63 +114,57 @@ error1      {digits}({letters}|[_])+
 {if} {
     /* Palavra reservada IF */
     printf("Keyword IF: %s - Line: %d | Column: %d\n", yytext, line, column);
-    addSymbol(&table, "<IF>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {else} {
     /* Palavra reservada ELSE */
     printf("Keyword ELSE: %s - Line: %d | Column: %d\n", yytext, line, column);
-    addSymbol(&table, "<ELSE>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {while} {
     /* Palavra reservada WHILE */
     printf("Keyword WHILE: %s - Line: %d | Column: %d\n", yytext, line, column);
-    addSymbol(&table, "<WHILE>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {print} {
     /* Palavra reservada PRINT */
     printf("Keyword PRINT: %s - Line: %d | Column: %d\n", yytext, line, column);
-    addSymbol(&table, "<PRINT>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {read} {
     /* Palavra reservada READ */
     printf("Keyword READ: %s - Line: %d | Column: %d\n", yytext, line, column);
-    addSymbol(&table, "<READ>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {true} {
     /* Palavra reservada TRUE */
     printf("Keyword TRUE: %s - Line: %d | Column: %d\n", yytext, line, column);
-    addSymbol(&table, "<TRUE>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {false} {
     /* Palavra reservada FALSE */
     printf("Keyword FALSE: %s - Line: %d | Column: %d\n", yytext, line, column);
-    addSymbol(&table, "<FALSE>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {types} {
     /* Tipo de dado */
     printf("Type: %s - Line: %d | Column: %d\n", yytext, line, column);
-    addSymbol(&table, "<TYPE>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {id} {
     /* Identificador */
     printf("ID: %s - Line: %d | Column: %d\n", yytext, line, column);
-    addSymbol(&table, "<ID>", yytext, line, column);
+    if (!findSymbol(&table, yytext)) {
+        addSymbol(&table, "<ID>", yytext, line, column);
+    }
     column += strlen(yytext);
 }
 
@@ -172,35 +178,30 @@ error1      {digits}({letters}|[_])+
 {arithop} {
     /* Operador aritmético */
     printf("Arithmetic Operator: %s - Line: %d | Column: %d\n", yytext, line, column);
-    addSymbol(&table, "<ARITHOP>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {relop} {
     /* Operador relacional */
     printf("Relational Operator: %s - Line: %d | Column: %d\n", yytext, line, column);
-    addSymbol(&table, "<RELOP>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {logicop} {
     /* Operador lógico */
     printf("Logical Operator: %s - Line: %d | Column: %d\n", yytext, line, column);
-    addSymbol(&table, "<LOGICOP>", yytext, line, column);
     column += strlen(yytext);
 }
 
 {symbols} {
     /* Símbolo especial */
     printf("Symbol: %s - Line: %d | Column: %d\n", yytext, line, column);
-    addSymbol(&table, "<SYMBOL>", yytext, line, column);
     column++;
 }
 
 {assignment} {
     /* Operador de atribuição */
     printf("Assignment: %s - Line: %d | Column: %d\n", yytext, line, column);
-    addSymbol(&table, "<ASSIGNMENT>", yytext, line, column);
     column++;
 }
 
