@@ -86,7 +86,7 @@ SymbolTable table; // Instância global da tabela de símbolos
 
 /*--------------- DEFINIÇÕES DE PADRÕES (EXPRESSÕES REGULARES) ---------------*/
 
-digits      0|(-?[1-9][0-9]*)
+digits      ([0-9]+)|(\-[1-9][0-9]*)
 letters     [a-zA-Z]+
 if          "if"
 else        "else"
