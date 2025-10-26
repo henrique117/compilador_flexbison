@@ -181,32 +181,32 @@ error1      {digits}({letters}|[_])+
 
 {mult} {
     column++;
-    if(strcmp(yytext, "\*") == 0) return T_MULT;
+    if(strcmp(yytext, "*") == 0) return T_MULT;
     return T_DIV;
 }
 
-"+" { column++; return T_SUM }
-"-" { column++; return T_MINUS }
+"+" { column++; return T_SUM; }
+"-" { column++; return T_MINUS; }
 
-"==" { column += yyleng; return T_EQUAL }
-"!=" { column += yyleng; return T_NOT_EQUAL }
-"<=" { column += yyleng; return T_LESSER_EQUAL }
-">=" { column += yyleng; return T_GREATER_EQUAL }
-"<" { column++; return T_LESSER }
-">" { column++; return T_GREATER }
+"==" { column += yyleng; return T_EQUAL; }
+"!=" { column += yyleng; return T_NOT_EQUAL; }
+"<=" { column += yyleng; return T_LESSER_EQUAL; }
+">=" { column += yyleng; return T_GREATER_EQUAL; }
+"<" { column++; return T_LESSER; }
+">" { column++; return T_GREATER; }
 
-"&&" { column += yyleng; return T_AND }
-"||" { column += yyleng; return T_OR }
-"!" { column++; return T_NOT }
+"&&" { column += yyleng; return T_AND; }
+"||" { column += yyleng; return T_OR; }
+"!" { column++; return T_NOT; }
 
-"=" { column++; return T_ATRIBUTION }
+"=" { column++; return T_ATRIBUTION; }
 
-";" { column++; return T_SEMICOLON }
-"," { column++; return T_COMMA }
-"(" { column++; return T_LEFT_PAREN }
-")" { column++; return T_RIGHT_PAREN }
-"{" { column++; return T_LEFT_BRACKET }
-"}" { column++; return T_RIGHT_BRACKET }
+";" { column++; return T_SEMICOLON; }
+"," { column++; return T_COMMA; }
+"(" { column++; return T_LEFT_PAREN;}
+")" { column++; return T_RIGHT_PAREN; }
+"{" { column++; return T_LEFT_BRACKET; }
+"}" { column++; return T_RIGHT_BRACKET; }
 
 {comment} {
     /* Ignorando Comentários, mas contando linha */

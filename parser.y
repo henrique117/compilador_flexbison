@@ -1,4 +1,7 @@
 /* parser.y */
+/* ----------------------------------------------------
+ * 1. INCLUDES E DECLARAÇÕES C
+ * ---------------------------------------------------- */
 %{
     #include <stdio.h>
     #include <stdlib.h>
@@ -11,7 +14,9 @@
     extern int line;
     extern int column;
 %}
-
+/* ----------------------------------------------------
+ * 2. DEFINIÇÕES DOS TOKENS, TIPOS E PRECEDÊNCIAS
+ * ---------------------------------------------------- */
 %union {
     char* text;
     int val;
@@ -29,9 +34,9 @@
 %token T_LEFT_PAREN T_RIGHT_PAREN T_LEFT_BRACKET T_RIGHT_BRACKET
 %token T_SEMICOLON T_COMMA
 
-%type <val> expr logic_or_expr logic_and_expr equality_expr relational_expr
-%type <val> additive_expr multiplicative_expr unary_expr primary_expr
-%type <val> assignment_expr
+//%type <val> expr logic_or_expr logic_and_expr equality_expr relational_expr
+//%type <val> additive_expr multiplicative_expr unary_expr primary_expr
+//%type <val> assignment_expr
 
 %left T_OR
 %left T_AND
@@ -42,6 +47,9 @@
 %right T_NOT UMINUS
 
 %%
+/* ----------------------------------------------------
+ * 3. REGRAS GRAMATICAIS 
+ * ---------------------------------------------------- */
 
 program:
     | program line
@@ -49,13 +57,48 @@ program:
 
 line:
     '\n'
-    | expr '\n'
+    | stmt '\n'
     | T_SEMICOLON
     ;
 
+stmt_list:
+    /* Lista de comandos */
+    | stmt_list stmt
+    ;
+
+compound_stmt:
+    T_LEFT_BRACKET stmt_list T_RIGHT_BRACKET
+    ;
+
+stmt:
+    matched_stmt
+    | open_stmt
+    ;
+
+matched_stmt:
+    simple_stmt
+    | compound_stmt
+    | T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt
+    | T_WHILE T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt
+    ;
+
+open_stmt:
+    T_IF T_LEFT_PAREN expr T_RIGHT_PAREN stmt
+    | T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE open_stmt
+    ;
+
+simple_stmt:
+    T_BOOLEAN T_ID T_ATRIBUTION expr T_SEMICOLON
+    | T_INT T_ID T_ATRIBUTION expr T_SEMICOLON
+    | T_ID T_ATRIBUTION expr T_SEMICOLON
+    | T_PRINT T_LEFT_PAREN expr T_RIGHT_PAREN T_SEMICOLON
+    | T_READ T_LEFT_PAREN T_ID T_RIGHT_PAREN T_SEMICOLON
+    ;
+
+/* ----------------- EXPRESSÕES ----------------- */
 expr:
     primary_expr
-    | assignment_expr
+    /* Aritméticos */
     | expr T_SUM expr
     | expr T_MINUS expr
     | expr T_MULT expr
@@ -77,9 +120,6 @@ expr:
     | T_LEFT_PAREN expr T_RIGHT_PAREN
     ;
 
-assignment_expr : T_ID T_ATRIBUTION expr
-    ;
-
 primary_expr : T_NUMBER
     | T_ID
     | T_TRUE
@@ -87,7 +127,9 @@ primary_expr : T_NUMBER
     ;
 
 %%
-
+/* ----------------------------------------------------
+ * 4. CÓDIGO MAIN EM C E FUNÇÃO DE ERRO
+ * ---------------------------------------------------- */
 void yyerror(char *s) {
     fprintf(stderr, "Erro de Sintaxe na Linha %d, Coluna %d: %s\n", line, column, s);
 } 
