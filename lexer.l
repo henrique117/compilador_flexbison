@@ -96,114 +96,117 @@ read        "read"
 true        "true"
 false       "false"
 types       (int|bool)
+
 newline     [\n]
 space       [ ]
 tab         [\t]
-symbols     (;|,|\(|\)|\{|\})
-relop       (==|!=|<=|>=|<|>)
-logicop     (&&|\|\||!)
-arithop     (\+|\-|\*|\/|%)
+
+mult        (\*|\/)
+
 id          ({letters}|[_])({letters}|{digits}|[_])*
-assignment  [=]
 comment     ("//".*|"/*"([^*]|\*+[^*/])*\*+"/")
 error1      {digits}({letters}|[_])+
 
 %%
 
-
 {if} {
     /* Palavra reservada IF */
-    printf("Keyword IF: %s - Line: %d | Column: %d\n", yytext, line, column);
-    column += strlen(yytext);
+    column += yyleng;
+    return T_IF;
 }
 
 {else} {
     /* Palavra reservada ELSE */
-    printf("Keyword ELSE: %s - Line: %d | Column: %d\n", yytext, line, column);
-    column += strlen(yytext);
+    column += yyleng;
+    return T_ELSE;
 }
 
 {while} {
     /* Palavra reservada WHILE */
-    printf("Keyword WHILE: %s - Line: %d | Column: %d\n", yytext, line, column);
-    column += strlen(yytext);
+    column += yyleng;
+    return T_WHILE;
 }
 
 {print} {
     /* Palavra reservada PRINT */
-    printf("Keyword PRINT: %s - Line: %d | Column: %d\n", yytext, line, column);
-    column += strlen(yytext);
+    column += yyleng;
+    return T_PRINT;
 }
 
 {read} {
     /* Palavra reservada READ */
-    printf("Keyword READ: %s - Line: %d | Column: %d\n", yytext, line, column);
-    column += strlen(yytext);
+    column += yyleng;
+    return T_READ;
 }
 
 {true} {
     /* Palavra reservada TRUE */
-    printf("Keyword TRUE: %s - Line: %d | Column: %d\n", yytext, line, column);
-    column += strlen(yytext);
+    column += yyleng;
+    return T_TRUE;
 }
 
 {false} {
     /* Palavra reservada FALSE */
-    printf("Keyword FALSE: %s - Line: %d | Column: %d\n", yytext, line, column);
-    column += strlen(yytext);
+    column += yyleng;
+    return T_FALSE;
 }
 
 {types} {
     /* Tipo de dado */
-    printf("Type: %s - Line: %d | Column: %d\n", yytext, line, column);
-    column += strlen(yytext);
+    column += yyleng;
+
+    if(strcmp(yytext, "int") == 0) return T_INT;
+    return T_BOOLEAN;
 }
 
 {id} {
     /* Identificador */
-    printf("ID: %s - Line: %d | Column: %d\n", yytext, line, column);
     if (!findSymbol(&table, yytext)) {
         addSymbol(&table, "<ID>", yytext, line, column);
     }
-    column += strlen(yytext);
+    column += yyleng;
+
+    yylval.text = strdup(yytext);
+    return T_ID;
 }
 
 {digits} { 
     /* Número inteiro */
-    printf("Number: %s - Line: %d | Column: %d\n", yytext, line, column);
     addSymbol(&table, "<NUMBER>", yytext, line, column);
-    column += strlen(yytext);
+    column += yyleng;
+
+    yylval.text = strdup(yytext);
+    return T_NUMBER;
 }
 
-{arithop} {
-    /* Operador aritmético */
-    printf("Arithmetic Operator: %s - Line: %d | Column: %d\n", yytext, line, column);
-    column += strlen(yytext);
-}
-
-{relop} {
-    /* Operador relacional */
-    printf("Relational Operator: %s - Line: %d | Column: %d\n", yytext, line, column);
-    column += strlen(yytext);
-}
-
-{logicop} {
-    /* Operador lógico */
-    printf("Logical Operator: %s - Line: %d | Column: %d\n", yytext, line, column);
-    column += strlen(yytext);
-}
-
-{symbols} {
-    /* Símbolo especial */
-    printf("Symbol: %s - Line: %d | Column: %d\n", yytext, line, column);
+{mult} {
     column++;
+    if(strcmp(yytext, "\*") == 0) return T_MULT;
+    return T_DIV;
 }
 
-{assignment} {
-    /* Operador de atribuição */
-    printf("Assignment: %s - Line: %d | Column: %d\n", yytext, line, column);
-    column++;
-}
+"+" { column++; return T_SUM }
+"-" { column++; return T_MINUS }
+
+"==" { column += yyleng; return T_EQUAL }
+"!=" { column += yyleng; return T_NOT_EQUAL }
+"<=" { column += yyleng; return T_LESSER_EQUAL }
+">=" { column += yyleng; return T_GREATER_EQUAL }
+"<" { column++; return T_LESSER }
+">" { column++; return T_GREATER }
+
+"&&" { column += yyleng; return T_AND }
+"||" { column += yyleng; return T_OR }
+"!" { column++; return T_NOT }
+
+"=" { column++; return T_ATRIBUTION }
+
+";" { column++; return T_SEMICOLON }
+"," { column++; return T_COMMA }
+"(" { column++; return T_LEFT_PAREN }
+")" { column++; return T_RIGHT_PAREN }
+"{" { column++; return T_LEFT_BRACKET }
+"}" { column++; return T_RIGHT_BRACKET }
 
 {comment} {
     /* Ignorando Comentários, mas contando linha */
@@ -226,13 +229,13 @@ error1      {digits}({letters}|[_])+
 . { 
     /* Erro léxico */
     printf("ERRO: %s - Line: %d | Column: %d - Message: Unexpected token: \"%s\". Lexical Error.\n", yytext, line, column, yytext);
-    column += strlen(yytext);
+    column += yyleng;
 }
 
 {error1} {
     /* Erro léxico */
     printf("ERRO: %s - Line: %d | Column: %d - Message: ID starting with a number: \"%s\". Lexical Error.\n", yytext, line, column, yytext);
-    column += strlen(yytext);
+    column += yyleng;
 }
 
 <<EOF>> {
@@ -247,17 +250,8 @@ error1      {digits}({letters}|[_])+
 
 // Função principal: inicializa tabela, abre arquivo, executa análise léxica e mostra tabela
 int main(int argc, char *argv[]) {
+
     initTable(&table);
-
-    yyin = fopen(argv[1], "r");
-    if (!yyin) {
-        perror("Erro ao abrir arquivo");
-        return 1;
-    }
-
-    yylex();
-    fclose(yyin);
-
     showTable(&table);
     freeTable(&table);
 

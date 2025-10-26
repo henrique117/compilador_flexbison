@@ -3,3 +3,5 @@ lexer.exe
 lexer.o
 a.exe
 saida.txt
+parser.tab.c
+parser.tab.h
