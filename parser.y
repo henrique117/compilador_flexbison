@@ -51,15 +51,11 @@
  * ---------------------------------------------------- */
 
 program:
-    | program line
+    stmt_list
+    | error { yyerrok; }
     ;
 
-line:
-    '\n'
-    | stmt '\n'
-    | T_SEMICOLON
-    | error '\n'  { yyerrok; } // Adicione isso
-;
+/* A REGRA 'line' FOI COMPLETAMENTE REMOVIDA */
 
 stmt_list:
     /* Lista de comandos */
@@ -68,11 +64,14 @@ stmt_list:
 
 compound_stmt:
     T_LEFT_BRACKET stmt_list T_RIGHT_BRACKET
+    | T_LEFT_BRACKET error T_RIGHT_BRACKET { yyerrok; }
     ;
 
 stmt:
     matched_stmt
     | open_stmt
+    | error T_SEMICOLON { yyerrok; }
+    | error T_RIGHT_BRACKET { yyerrok; }
     ;
 
 matched_stmt:
@@ -93,6 +92,7 @@ simple_stmt:
     | T_ID T_ATRIBUTION expr T_SEMICOLON
     | T_PRINT T_LEFT_PAREN expr T_RIGHT_PAREN T_SEMICOLON
     | T_READ T_LEFT_PAREN T_ID T_RIGHT_PAREN T_SEMICOLON
+    | T_SEMICOLON /* Permite statements vazios (ex: ';') */
     ;
 
 /* ----------------- EXPRESSÕES ----------------- */
