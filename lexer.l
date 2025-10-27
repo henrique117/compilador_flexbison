@@ -229,19 +229,19 @@ error1      {digits}({letters}|[_])+
 
 . { 
     /* Erro léxico */
-    printf("ERRO: %s - Line: %d | Column: %d - Message: Unexpected token: \"%s\". Lexical Error.\n", yytext, line, column, yytext);
+    printf("ERRO: %s - Linha: %d | Coluna: %d - Messagem: Token Inesperado: \"%s\". Lexical Error.\n", yytext, line, column, yytext);
     column += yyleng;
 }
 
 {error1} {
     /* Erro léxico */
-    printf("ERRO: %s - Line: %d | Column: %d - Message: ID starting with a number: \"%s\". Lexical Error.\n", yytext, line, column, yytext);
+    printf("ERRO: %s - Linha: %d | Coluna: %d - Messagem: ID começando com numero: \"%s\". Lexical Error.\n", yytext, line, column, yytext);
     column += yyleng;
 }
 
 <<EOF>> {
     /* Fim de arquivo */
-    /* printf("Fim de arquivo - Line: %d | Column: %d\n", line, column); */
+    /* printf("Fim de arquivo - Linha: %d | Coluna: %d\n", line, column); */
     return 0;
 }
 

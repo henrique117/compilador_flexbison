@@ -1,5 +1,5 @@
 int x = -0;                         // Testa -0
-int v = -00001;                         // Testa Número Negativo
+int v = -00001;                     // Testa Número Negativo
 bool _flag = false;                 
 if (x >= 5 && _flag) {
     print(x);

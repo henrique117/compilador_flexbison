@@ -193,7 +193,7 @@ primary_expr : T_NUMBER
  * 4. CÓDIGO MAIN EM C E FUNÇÃO DE ERRO
  * ---------------------------------------------------- */
 void yyerror(char *s) {
-    fprintf(stderr, "Erro na Linha %d, Coluna %d: %s\n", line, column, s);
+    fprintf(stderr, "Erro Sintatico na Linha %d, Coluna %d: %s\n", line, column, s);
 }
 
 int main(int argc, char *argv[]) {
