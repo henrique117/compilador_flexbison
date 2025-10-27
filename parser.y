@@ -12,7 +12,6 @@
     
     extern int line;
     extern int column;
-    extern int yyparse(void);
 %}
 /* ----------------------------------------------------
  * 2. DEFINIÇÕES DOS TOKENS, TIPOS E PRECEDÊNCIAS
@@ -72,10 +71,6 @@ compound_stmt:
         yyerror("-> Erro de sintaxe dentro do bloco '{ }'\n");
         yyerrok;
     }
-    /*| T_LEFT_BRACKET stmt_list error {
-        yyerror("-> Detectado '}' ausente\n");
-        yyerrok;
-    } */
     ;
 
 stmt:
@@ -194,12 +189,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    //yyparse(); /* Inicia a analise */
-    if (yyparse() == 0) {
-        printf("\n==========================================\n");
-        printf("Análise sintática concluída com sucesso!\n");
-        printf("==========================================\n");
-    }
+    yyparse(); /* Inicia a analise */
     
     fclose(yyin);
     return 0;
