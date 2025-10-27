@@ -1,13 +1,14 @@
-int x = ;       // Erro: Esperava expressão depois de '='
+int x = ;       // Erro 1: Esperava expressão depois de '='
+bool z = /;
+if x > 5)       // Erro 2: Faltando ')'
 
-if (x > 5       // Erro: Faltando ')'
-    print(x);
+x = 5 + * 2;    // Erro 3: Operador '*' inesperado
 
-x = 5 + * 2;    // Erro: Operador '*' inesperado
+print(x         // Erro 4: Faltando ')'
+;               // O parser vai se recuperar neste ';'
+int a = 1;      // Um statement válido para continuar
 
-while (x) {     // Erro: '}' faltando no final do arquivo
+else { }        // Erro 5: 'else' sem 'if'. O parser vai se recuperar no '}'
+
+while (x) {     // Erro 6: '}' faltando no final do arquivo
     x = x - 1;
-
-print(x         // Erro: Faltando ')' e ';'
-
-else { }        // Erro: 'else' sem 'if'

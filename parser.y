@@ -45,6 +45,9 @@
 %left T_MULT T_DIV
 %right T_NOT UMINUS
 
+%nonassoc IFX  /* Define a precedência para 'if' sem 'else' */
+%nonassoc T_ELSE /* Define a precedência para 'else' */
+
 %%
 /* ----------------------------------------------------
  * 3. REGRAS GRAMATICAIS 
@@ -52,26 +55,28 @@
 
 program:
     stmt_list
-    | error { yyerrok; }
     ;
 
 /* A REGRA 'line' FOI COMPLETAMENTE REMOVIDA */
 
 stmt_list:
-    /* Lista de comandos */
+    stmt
     | stmt_list stmt
     ;
 
 compound_stmt:
-    T_LEFT_BRACKET stmt_list T_RIGHT_BRACKET
-    | T_LEFT_BRACKET error T_RIGHT_BRACKET { yyerrok; }
+    T_LEFT_BRACKET T_RIGHT_BRACKET
+    | T_LEFT_BRACKET stmt_list T_RIGHT_BRACKET
+    | T_LEFT_BRACKET error T_RIGHT_BRACKET
     ;
 
 stmt:
     matched_stmt
     | open_stmt
-    | error T_SEMICOLON { yyerrok; }
-    | error T_RIGHT_BRACKET { yyerrok; }
+    | error T_SEMICOLON {
+        yyerror("Expressao ou atribuicao mal formada");
+        yyerrok;
+    }
     ;
 
 matched_stmt:
@@ -84,15 +89,29 @@ matched_stmt:
 open_stmt:
     T_IF T_LEFT_PAREN expr T_RIGHT_PAREN stmt
     | T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE open_stmt
+    | T_IF T_LEFT_PAREN expr error stmt {
+        yyerror("Detectado ')' ausente no 'if'");
+    }
+    | T_IF error expr T_RIGHT_PAREN stmt {
+        yyerror("Detectado '(' ausente no 'if'");
+    }
     ;
 
 simple_stmt:
     T_BOOLEAN T_ID T_ATRIBUTION expr T_SEMICOLON
     | T_INT T_ID T_ATRIBUTION expr T_SEMICOLON
-    | T_ID T_ATRIBUTION expr T_SEMICOLON
-    | T_PRINT T_LEFT_PAREN expr T_RIGHT_PAREN T_SEMICOLON
-    | T_READ T_LEFT_PAREN T_ID T_RIGHT_PAREN T_SEMICOLON
-    | T_SEMICOLON /* Permite statements vazios (ex: ';') */
+    | T_INT T_ID T_ATRIBUTION error T_SEMICOLON {
+         yyerror("Atribuicao invalida para int.");
+         yyerrok;
+    }
+    | T_BOOLEAN T_ID T_ATRIBUTION error T_SEMICOLON {
+         yyerror("Atribuicao invalida para boolean.");
+         yyerrok;
+    }
+    | T_PRINT T_LEFT_PAREN expr error T_SEMICOLON {
+        yyerror("Detectado ')' ausente no 'print'.");
+        yyerrok;
+    }
     ;
 
 /* ----------------- EXPRESSÕES ----------------- */
@@ -131,8 +150,11 @@ primary_expr : T_NUMBER
  * 4. CÓDIGO MAIN EM C E FUNÇÃO DE ERRO
  * ---------------------------------------------------- */
 void yyerror(char *s) {
-    fprintf(stderr, "Erro de Sintaxe na Linha %d, Coluna %d: %s\n", line, column, s);
-} 
+    if (strcmp(s, "syntax error") == 0) {
+    } else {
+        fprintf(stderr, "Erro de Sintaxe na Linha %d, Coluna %d: %s\n", line, column, s);
+    }
+}
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
