@@ -10,11 +10,11 @@ if (x > 5 {         // Erro Sintático: Faltando ')'
 x = 5 + * 2;    // Erro Sintático: Operador inesperado
 
 print(x             // Erro Sintático: Faltando ')'
-;                   // O parser vai se recuperar neste ';', assim é necessário olhar para trás do ';' para enxergar o erro
+;                   // O parser vai se recuperar neste ';', /*
+                    //assim é necessário olhar para trás do ';' para enxergar o erro
 
 else { }            // Erro Sintático: 'else' sem 'if'. O parser vai se recuperar no '}'
 
 while (x) {         // Erro Sintático: '}' faltando no final do arquivo,
-    x = x - 1;}      // mas que não consigo identificar ou tratar da maneira correta ao indificar o que falta
+    x = x - 1;}     // mas que não consigo identificar ou tratar da maneira correta ao indificar o que falta
                     // Ele até conta colunas de comentários de tão potente que é
-                    
