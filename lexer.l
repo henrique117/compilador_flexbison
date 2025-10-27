@@ -241,7 +241,7 @@ error1      {digits}({letters}|[_])+
 
 <<EOF>> {
     /* Fim de arquivo */
-    printf("Fim de arquivo - Line: %d | Column: %d\n", line, column);
+    /* printf("Fim de arquivo - Line: %d | Column: %d\n", line, column); */
     return 0;
 }
 

@@ -9,9 +9,10 @@
     extern FILE *yyin;
     int yylex(void);
     void yyerror(char *s);
-
+    
     extern int line;
     extern int column;
+    extern int yyparse(void);
 %}
 /* ----------------------------------------------------
  * 2. DEFINIÇÕES DOS TOKENS, TIPOS E PRECEDÊNCIAS
@@ -67,18 +68,25 @@ stmt_list:
 compound_stmt:
     T_LEFT_BRACKET T_RIGHT_BRACKET
     | T_LEFT_BRACKET stmt_list T_RIGHT_BRACKET
-    | T_LEFT_BRACKET error T_RIGHT_BRACKET
-    | T_LEFT_BRACKET stmt_list error {
-        yyerror("Detectado '}' ausente");
+    | T_LEFT_BRACKET error T_RIGHT_BRACKET {
+        yyerror("-> Erro de sintaxe dentro do bloco '{ }'\n");
         yyerrok;
     }
+    /*| T_LEFT_BRACKET stmt_list error {
+        yyerror("-> Detectado '}' ausente\n");
+        yyerrok;
+    } */
     ;
 
 stmt:
     matched_stmt
     | open_stmt
     | error T_SEMICOLON {
-        yyerror("Expressao ou atribuicao mal formada");
+        yyerror("-> Expressao ou atribuicao mal formada\n");
+        yyerrok;
+    }
+    | T_LEFT_BRACKET stmt_list error {
+        yyerror("-> Detectado '}' ausente\n");
         yyerrok;
     }
     ;
@@ -87,17 +95,17 @@ matched_stmt:
     simple_stmt
     | compound_stmt
     | T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt
-    /* | error T_ELSE matched_stmt {
-        yyerror("'else' sem 'if' previamente");
+    | error T_ELSE matched_stmt {
+        yyerror("-> 'else' sem 'if' previamente\n");
         yyerrok;
-    } */
+    }
     | T_WHILE T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt
     | T_WHILE T_LEFT_PAREN expr error matched_stmt {
-        yyerror("Detectado ')' ausente na formacao de 'while'");
+        yyerror("-> Detectado ')' ausente na formacao de 'while'\n");
         yyerrok;
     }
     | T_WHILE error expr T_RIGHT_PAREN matched_stmt {
-        yyerror("Detectado '(' ausente na formacao de 'while'");
+        yyerror("-> Detectado '(' ausente na formacao de 'while'\n");
         yyerrok;
     }
     ;
@@ -106,10 +114,12 @@ open_stmt:
     T_IF T_LEFT_PAREN expr T_RIGHT_PAREN stmt
     | T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE open_stmt
     | T_IF T_LEFT_PAREN expr error stmt {
-        yyerror("Detectado ')' ausente no 'if'");
+        yyerror("-> Detectado ')' ausente no 'if'\n");
+        yyerrok;
     }
     | T_IF error expr T_RIGHT_PAREN stmt {
-        yyerror("Detectado '(' ausente no 'if'");
+        yyerror("-> Detectado '(' ausente no 'if'\n");
+        yyerrok;
     }
     ;
 
@@ -117,16 +127,16 @@ simple_stmt:
     T_BOOLEAN T_ID T_ATRIBUTION expr T_SEMICOLON
     | T_INT T_ID T_ATRIBUTION expr T_SEMICOLON
     | T_INT T_ID T_ATRIBUTION error T_SEMICOLON {
-         yyerror("Atribuicao invalida para int.");
-         yyerrok;
+        yyerror("-> Atribuicao invalida para int\n");
+        yyerrok;
     }
     | T_BOOLEAN T_ID T_ATRIBUTION error T_SEMICOLON {
-         yyerror("Atribuicao invalida para boolean.");
-         yyerrok;
+        yyerror("-> Atribuicao invalida para boolean\n");
+        yyerrok;
     }
     | T_PRINT T_LEFT_PAREN expr T_RIGHT_PAREN T_SEMICOLON
     | T_PRINT T_LEFT_PAREN expr error T_SEMICOLON {
-        yyerror("Detectado ')' ausente no 'print'.");
+        yyerror("-> Detectado ')' ausente no 'print'\n");
         yyerrok;
     }
     | T_ID T_ATRIBUTION expr T_SEMICOLON
@@ -169,10 +179,7 @@ primary_expr : T_NUMBER
  * 4. CÓDIGO MAIN EM C E FUNÇÃO DE ERRO
  * ---------------------------------------------------- */
 void yyerror(char *s) {
-    if (strcmp(s, "syntax error") == 0) {
-    } else {
-        fprintf(stderr, "Erro de Sintaxe na Linha %d, Coluna %d: %s\n", line, column, s);
-    }
+    fprintf(stderr, "Erro na Linha %d, Coluna %d: %s\n", line, column, s);
 }
 
 int main(int argc, char *argv[]) {
@@ -187,7 +194,12 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    yyparse(); /* Inicia a analise */
+    //yyparse(); /* Inicia a analise */
+    if (yyparse() == 0) {
+        printf("\n==========================================\n");
+        printf("Análise sintática concluída com sucesso!\n");
+        printf("==========================================\n");
+    }
     
     fclose(yyin);
     return 0;

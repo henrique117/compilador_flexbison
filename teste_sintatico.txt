@@ -1,16 +1,19 @@
-int x = ;       // Erro 1: Esperava expressão depois de '='
-bool z = /;
-if (x > 5) {       // Erro 2: Faltando ')'
+int x = ;           // Erro 1: Esperava expressão depois de '='
+bool z = /;         // Erro 2: Não deveria ter '/' atribuido
+bool z = true;
+if (x > 5 {         // Erro 3: Faltando ')'
     print(a);
+} else {
+    int a = 1;
 
-x = 5 + * 2;    // Erro 3: Operador '*' inesperado
+x = 5 + * 2;    // Erro 4: Operador inesperado
 
-print(x         // Erro 4: Faltando ')'
-;               // O parser vai se recuperar neste ';'
-int a = 1;      // Um statement válido para continuar
+print(x             // Erro 4: Faltando ')'
+;                   // O parser vai se recuperar neste ';', assim é necessário olhar para trás do ';' para enxergar o erro
+          // Um statement válido para continuar
 
-else { }        // Erro 5: 'else' sem 'if'. O parser vai se recuperar no '}'
+else { }            // Erro 5: 'else' sem 'if'. O parser vai se recuperar no '}'
 
-while (x) {     // Erro 6: '}' faltando no final do arquivo
-    x = x - 1;
-}
+while (x) {         // Erro 6: '}' faltando no final do arquivo,
+    x = x - 1;}      // mas que não consigo identificar ou tratar da maneira correta ao indificar o que falta
+                    // Ele até conta colunas de comentários de tão potente que é
