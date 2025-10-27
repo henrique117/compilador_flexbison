@@ -12,6 +12,25 @@
     
     extern int line;
     extern int column;
+
+    // Para fazer a tabela de simbolos aparecer de novo
+    typedef struct {
+        char token[50];
+        char value[50];
+        int line;
+        int column;
+    } Symbol;
+
+    typedef struct {
+        Symbol *symbols;
+        int size;
+        int capacity;
+    } SymbolTable;
+
+    // Declarações externas para acessar a tabela e a função de lexer.l
+    extern SymbolTable table;
+    extern void showTable(SymbolTable *table);
+
 %}
 /* ----------------------------------------------------
  * 2. DEFINIÇÕES DOS TOKENS, TIPOS E PRECEDÊNCIAS
@@ -186,11 +205,17 @@ int main(int argc, char *argv[]) {
     yyin = fopen(argv[1], "r");
     if (!yyin) {
         perror("Erro ao abrir arquivo");
-        return 1;
+        return 2;
     }
 
     yyparse(); /* Inicia a analise */
-    
+
+    printf("\n========================================\n");
+    printf("Analise sintatica concluida com sucesso!\n");
+    printf("========================================\n");
+
+    showTable(&table);
+
     fclose(yyin);
     return 0;
 }
