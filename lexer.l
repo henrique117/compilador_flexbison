@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "parser.tab.h"
 
 #define TOKEN_EOF "<EOF>" // Token especial para fim de arquivo
 
@@ -248,15 +249,7 @@ error1      {digits}({letters}|[_])+
 
 /*--------------- FUNÇÕES AUXILIARES E MAIN ---------------*/
 
-// Função principal: inicializa tabela, abre arquivo, executa análise léxica e mostra tabela
-int main(int argc, char *argv[]) {
-
-    initTable(&table);
-    showTable(&table);
-    freeTable(&table);
-
-    return 0;
-}
+// Função Main removida para evitar conflito com o Main do Yaac (Yacc?)
 
 // Função obrigatória para Flex
 int yywrap() {

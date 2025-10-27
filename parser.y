@@ -1,4 +1,3 @@
-/* parser.y */
 /* ----------------------------------------------------
  * 1. INCLUDES E DECLARAÇÕES C
  * ---------------------------------------------------- */
@@ -59,7 +58,8 @@ line:
     '\n'
     | stmt '\n'
     | T_SEMICOLON
-    ;
+    | error '\n'  { yyerrok; } // Adicione isso
+;
 
 stmt_list:
     /* Lista de comandos */

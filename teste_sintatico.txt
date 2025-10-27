@@ -1,0 +1,13 @@
+int x = ;       // Erro: Esperava expressão depois de '='
+
+if (x > 5       // Erro: Faltando ')'
+    print(x);
+
+x = 5 + * 2;    // Erro: Operador '*' inesperado
+
+while (x) {     // Erro: '}' faltando no final do arquivo
+    x = x - 1;
+
+print(x         // Erro: Faltando ')' e ';'
+
+else { }        // Erro: 'else' sem 'if'
