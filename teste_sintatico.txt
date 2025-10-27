@@ -1,11 +1,11 @@
-int 1q = -0;
+int 1q = -0;        // Erro Léxico: ID começando com numero
 int x = ;           // Erro Sintático: Esperava expressão depois de '='
 bool z = /;         // Erro Sintático: Não deveria ter '/' atribuido
 bool z = true;
 if (x > 5 {         // Erro Sintático: Faltando ')'
     print(a);
 
-    int @a = 1;
+    int @a = 1;     // Erro Léxico: Caractere especial inesperado
 
 x = 5 + * 2;    // Erro Sintático: Operador inesperado
 
