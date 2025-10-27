@@ -8,12 +8,11 @@ if (x > 5 {         // Erro 3: Faltando ')'
 
 x = 5 + * 2;    // Erro 4: Operador inesperado
 
-print(x             // Erro 4: Faltando ')'
+print(x             // Erro 5: Faltando ')'
 ;                   // O parser vai se recuperar neste ';', assim é necessário olhar para trás do ';' para enxergar o erro
-          // Um statement válido para continuar
 
-else { }            // Erro 5: 'else' sem 'if'. O parser vai se recuperar no '}'
+else { }            // Erro 6: 'else' sem 'if'. O parser vai se recuperar no '}'
 
-while (x) {         // Erro 6: '}' faltando no final do arquivo,
+while (x) {         // Erro 7: '}' faltando no final do arquivo,
     x = x - 1;}      // mas que não consigo identificar ou tratar da maneira correta ao indificar o que falta
                     // Ele até conta colunas de comentários de tão potente que é
