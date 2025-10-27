@@ -68,6 +68,10 @@ compound_stmt:
     T_LEFT_BRACKET T_RIGHT_BRACKET
     | T_LEFT_BRACKET stmt_list T_RIGHT_BRACKET
     | T_LEFT_BRACKET error T_RIGHT_BRACKET
+    | T_LEFT_BRACKET stmt_list error {
+        yyerror("Detectado '}' ausente");
+        yyerrok;
+    }
     ;
 
 stmt:
@@ -83,7 +87,19 @@ matched_stmt:
     simple_stmt
     | compound_stmt
     | T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt
+    /* | error T_ELSE matched_stmt {
+        yyerror("'else' sem 'if' previamente");
+        yyerrok;
+    } */
     | T_WHILE T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt
+    | T_WHILE T_LEFT_PAREN expr error matched_stmt {
+        yyerror("Detectado ')' ausente na formacao de 'while'");
+        yyerrok;
+    }
+    | T_WHILE error expr T_RIGHT_PAREN matched_stmt {
+        yyerror("Detectado '(' ausente na formacao de 'while'");
+        yyerrok;
+    }
     ;
 
 open_stmt:
@@ -108,10 +124,13 @@ simple_stmt:
          yyerror("Atribuicao invalida para boolean.");
          yyerrok;
     }
+    | T_PRINT T_LEFT_PAREN expr T_RIGHT_PAREN T_SEMICOLON
     | T_PRINT T_LEFT_PAREN expr error T_SEMICOLON {
         yyerror("Detectado ')' ausente no 'print'.");
         yyerrok;
     }
+    | T_ID T_ATRIBUTION expr T_SEMICOLON
+    | T_READ T_LEFT_PAREN T_ID T_RIGHT_PAREN T_SEMICOLON
     ;
 
 /* ----------------- EXPRESSÕES ----------------- */

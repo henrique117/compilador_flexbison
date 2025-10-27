@@ -1,6 +1,7 @@
 int x = ;       // Erro 1: Esperava expressão depois de '='
 bool z = /;
-if x > 5)       // Erro 2: Faltando ')'
+if (x > 5) {       // Erro 2: Faltando ')'
+    print(a);
 
 x = 5 + * 2;    // Erro 3: Operador '*' inesperado
 
@@ -12,3 +13,4 @@ else { }        // Erro 5: 'else' sem 'if'. O parser vai se recuperar no '}'
 
 while (x) {     // Erro 6: '}' faltando no final do arquivo
     x = x - 1;
+}
