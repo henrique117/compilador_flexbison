@@ -30,6 +30,7 @@
     // Declarações externas para acessar a tabela e a função de lexer.l
     extern SymbolTable table;
     extern void showTable(SymbolTable *table);
+    void initTable(SymbolTable *table);
 
 %}
 /* ----------------------------------------------------
@@ -201,6 +202,8 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Uso: %s <arquivo_de_entrada>\n", argv[0]);
         return 1;
     }
+
+    initTable(&table);
 
     yyin = fopen(argv[1], "r");
     if (!yyin) {
