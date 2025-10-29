@@ -1,7 +1,8 @@
-int 1q = -0;        // Erro Léxico: ID começando com numero
-int x = ;           // Erro Sintático: Esperava expressão depois de '='
+/*int q1 = ------0;        // Erro Léxico: ID começando com numero
+int x = 2;
+int x = 2;           // Erro Sintático: Esperava expressão depois de '='
 bool z = /;         // Erro Sintático: Não deveria ter '/' atribuido
-bool z = true;
+bool z = true; */
 if (x > 5 {         // Erro Sintático: Faltando ')'
     print(a);
 
@@ -16,5 +17,5 @@ print(x             // Erro Sintático: Faltando ')'
 else { }            // Erro Sintático: 'else' sem 'if'. O parser vai se recuperar no '}'
 
 while (x) {         // Erro Sintático: '}' faltando no final do arquivo,
-    x = x - 1;}     // mas que não consigo identificar ou tratar da maneira correta ao indificar o que falta
+    x = x - 1;     // mas que não consigo identificar ou tratar da maneira correta ao indificar o que falta
                     // Ele até conta colunas de comentários de tão potente que é
