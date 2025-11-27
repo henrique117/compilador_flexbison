@@ -12,77 +12,9 @@
 int line = 1;
 int column = 1;
 
-// Estrutura para armazenar um símbolo (token reconhecido)
-typedef struct {
-    char token[50];   // Nome do Token (ex: <ID>, <NUMBER>, <TYPE>)
-    char value[50];   // Valor do lexema reconhecido
-    int line;         // Linha onde o token foi encontrado
-    int column;       // Coluna onde o token foi encontrado
-} Symbol;
 
-// Estrutura da tabela de símbolos (dinâmica)
-typedef struct {
-    Symbol *symbols;  // Array dinâmico de símbolos
-    int size;         // Quantos símbolos já foram inseridos
-    int capacity;     // Capacidade atual do array
-} SymbolTable;
 
-// Inicializa a tabela de símbolos
-void initTable(SymbolTable *table) {
-    table->size = 0;
-    table->capacity = 2;
-    table->symbols = malloc(table->capacity * sizeof(Symbol));
-}
 
-// Adiciona um símbolo à tabela, expandindo se necessário
-void addSymbol(SymbolTable *table, const char *token, const char *value, int line, int column) {
-    // Expande o array se necessário
-    if (table->size == table->capacity) {
-        table->capacity *= 2;
-        table->symbols = realloc(table->symbols, table->capacity * sizeof(Symbol));
-    }
-    // Copia os dados do símbolo
-    strcpy(table->symbols[table->size].token, token);
-    strcpy(table->symbols[table->size].value, value);
-    table->symbols[table->size].line = line;
-    table->symbols[table->size].column = column;
-    table->size++;
-}
-
-// 1 é Falsidade Ideologica e 0 é Moralmente Aceito
-int findSymbol(SymbolTable *table, const char *value) {
-    for (int i = 0; i < table->size; i++) {
-        // Compara apenas os identificadores que já foram inseridos
-        if (strcmp(table->symbols[i].token, "<ID>") == 0 && 
-            strcmp(table->symbols[i].value, value) == 0) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-// Mostra todos os símbolos reconhecidos
-void showTable(SymbolTable *table) {
-    printf("\n---- Tabela de Simbolos ----\n");
-    for (int i = 0; i < table->size; i++) {
-        printf("%d Token: %s | Value: %s | Line: %d | Column: %d\n",
-               i + 1,
-               table->symbols[i].token,
-               table->symbols[i].value,
-               table->symbols[i].line,
-               table->symbols[i].column);
-    }
-    printf("----------------------------\n");
-}
-
-// Libera a memória da tabela de símbolos
-void freeTable(SymbolTable *table) {
-    free(table->symbols);
-    table->symbols = NULL;
-    table->size = table->capacity = 0;
-}
-
-SymbolTable table; // Instância global da tabela de símbolos
 %}
 
 /*--------------- DEFINIÇÕES DE PADRÕES (EXPRESSÕES REGULARES) ---------------*/
@@ -162,9 +94,6 @@ error1      {digits}({letters}|[_])+
 
 {id} {
     /* Identificador */
-    if (!findSymbol(&table, yytext)) {
-        addSymbol(&table, "<ID>", yytext, line, column);
-    }
     column += yyleng;
 
     yylval.text = strdup(yytext);
@@ -173,7 +102,6 @@ error1      {digits}({letters}|[_])+
 
 {digits} { 
     /* Número inteiro */
-    addSymbol(&table, "<NUMBER>", yytext, line, column);
     column += yyleng;
 
     yylval.text = strdup(yytext);

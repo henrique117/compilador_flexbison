@@ -5,6 +5,7 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
+    #include <stdbool.h>
 
     extern FILE *yyin;
     int yylex(void);
@@ -13,24 +14,40 @@
     extern int line;
     extern int column;
 
-    // Para fazer a tabela de simbolos aparecer de novo
-    typedef struct {
-        char token[50];
-        char value[50];
-        int line;
-        int column;
-    } Symbol;
+    // NOVO ENUMERADOR DE TIPOS SEMÂNTICOS
+    typedef enum { TIPO_INT, TIPO_BOOL, TIPO_UNDEFINED } Tipo;
 
-    typedef struct {
-        Symbol *symbols;
-        int size;
-        int capacity;
-    } SymbolTable;
+    // ESTRUTURAS DA TABELA DE SÍMBOLOS (TS) com Escopos Aninhados
+    
+    // Entrada de Símbolo: Armazena id, tipo e nível de escopo.
+    typedef struct SymbolEntry {
+        char *id;
+        Tipo tipo; 
+        int escopo_level;
+        struct SymbolEntry *next; // Lista de símbolos do escopo
+    } SymbolEntry;
 
-    // Declarações externas para acessar a tabela e a função de lexer.l
-    extern SymbolTable table;
-    extern void showTable(SymbolTable *table);
-    void initTable(SymbolTable *table);
+    // Escopo: Nó na pilha de escopos.
+    typedef struct Scope {
+        int level; // Nível do escopo (1 = global, 2 = primeiro bloco, etc.)
+        SymbolEntry *head; // Cabeça da lista de símbolos deste escopo
+        struct Scope *prev; // Escopo anterior (simula a pilha)
+    } Scope;
+
+    // Variáveis globais da TS
+    Scope *current_scope = NULL;
+    int scope_counter = 0; // Contador de nível de escopo
+
+    // PROTÓTIPOS DA TS E ERRO SEMÂNTICO
+    void yysemanticerror(const char *msg, int line, int column);
+    void init_table();
+    void push_scope();
+    void pop_scope();
+    bool check_redeclaration(const char *id);
+    SymbolEntry* insert_symbol(const char *id, Tipo tipo);
+    SymbolEntry* lookup_symbol(const char *id);
+    const char* tipo_to_string(Tipo tipo); 
+    void show_ts(); // Função para exibir a tabela
 
 %}
 /* ----------------------------------------------------
@@ -39,9 +56,14 @@
 %union {
     char* text;
     int val;
+    Tipo sem_type;          // Tipo semântico (TIPO_INT, TIPO_BOOL)
+    SymbolEntry *sym_ptr;   // Ponteiro para a entrada da TS (para IDs ou expressões resolvidas)
 }
 
 %token <text> T_ID T_NUMBER
+
+// Adiciona o novo tipo semântico para expressões
+%type <sem_type> expr primary_expr
 
 %token T_IF T_ELSE T_WHILE T_PRINT T_READ
 %token T_TRUE T_FALSE
@@ -85,11 +107,13 @@ stmt_list:
     ;
 
 compound_stmt:
-    T_LEFT_BRACKET T_RIGHT_BRACKET
-    | T_LEFT_BRACKET stmt_list T_RIGHT_BRACKET
-    | T_LEFT_BRACKET error T_RIGHT_BRACKET {
+    T_LEFT_BRACKET  { push_scope(); } T_RIGHT_BRACKET { pop_scope(); }
+    |
+    T_LEFT_BRACKET { push_scope(); } stmt_list T_RIGHT_BRACKET { pop_scope(); }
+    | T_LEFT_BRACKET { push_scope(); } error T_RIGHT_BRACKET {
         yyerror("-> Erro de sintaxe dentro do bloco '{ }'\n");
         yyerrok;
+        pop_scope(); // Garante o fechamento do escopo mesmo no erro
     }
     ;
 
@@ -139,8 +163,22 @@ open_stmt:
     ;
 
 simple_stmt:
-    T_BOOLEAN T_ID T_ATRIBUTION expr T_SEMICOLON
-    | T_INT T_ID T_ATRIBUTION expr T_SEMICOLON
+    T_BOOLEAN T_ID T_ATRIBUTION expr T_SEMICOLON {
+        // ID: $2.text, Tipo: TIPO_BOOL
+        if (check_redeclaration($2.text)) {
+            yysemanticerror("Identificador re-declarado no escopo atual.", line, column);
+        } else {
+            insert_symbol($2.text, TIPO_BOOL);
+        }
+    }
+    | T_INT T_ID T_ATRIBUTION expr T_SEMICOLON {
+        // ID: $2.text, Tipo: TIPO_INT
+        if (check_redeclaration($2.text)) {
+            yysemanticerror("Identificador re-declarado no escopo atual.", line, column);
+        } else {
+            insert_symbol($2.text, TIPO_INT);
+        }
+    }
     | T_INT T_ID T_ATRIBUTION error T_SEMICOLON {
         yyerror("-> Atribuicao invalida para int\n");
         yyerrok;
@@ -183,16 +221,167 @@ expr:
     | T_LEFT_PAREN expr T_RIGHT_PAREN
     ;
 
-primary_expr : T_NUMBER
-    | T_ID
-    | T_TRUE
-    | T_FALSE
+primary_expr : 
+    T_NUMBER {
+        // Um número literal sempre tem o tipo INT
+        $$.sem_type = TIPO_INT; 
+    }
+    | T_ID {
+        SymbolEntry *entry = lookup_symbol($1.text);
+        
+        if (entry == NULL) {
+            // ERRO SEMÂNTICO: Identificador em uso não foi declarado.
+            yysemanticerror("Identificador não declarado (uso indevido).", line, column);
+            
+            // Para permitir que o Type Checker continue, definimos um tipo indefinido
+            $$.sem_type = TIPO_UNDEFINED;
+        } else {
+            // ID encontrado: armazenamos o tipo da variável para uso no Type Checking
+            $$.sem_type = entry->tipo;
+        }
+    }
+    | T_TRUE {
+        // 'true' é um literal booleano
+        $$.sem_type = TIPO_BOOL;
+    }
+    | T_FALSE {
+        // 'false' é um literal booleano
+        $$.sem_type = TIPO_BOOL;
+    }
     ;
 
 %%
 /* ----------------------------------------------------
  * 4. CÓDIGO MAIN EM C E FUNÇÃO DE ERRO
  * ---------------------------------------------------- */
+
+void yysemanticerror(const char *msg, int line, int column) {
+    fprintf(stderr, "Erro Semântico na Linha %d, Coluna %d: %s\n", line, column, msg);
+}
+
+const char* tipo_to_string(Tipo tipo) {
+    if (tipo == TIPO_INT) return "int";
+    if (tipo == TIPO_BOOL) return "bool";
+    return "indefinido";
+}
+
+// Inicializa a tabela (cria o escopo global)
+void init_table() {
+    // Escopo Global (Nível 1)
+    scope_counter = 0; 
+    push_scope(); 
+}
+
+// Adiciona um novo escopo ao topo da pilha
+void push_scope() {
+    Scope *new_scope = (Scope *)malloc(sizeof(Scope));
+    if (!new_scope) {
+        yysemanticerror("Erro interno: Memória insuficiente para novo escopo.", line, column);
+        exit(1);
+    }
+    scope_counter++;
+    new_scope->level = scope_counter;
+    new_scope->head = NULL;
+    new_scope->prev = current_scope;
+    current_scope = new_scope;
+}
+
+// Remove o escopo do topo da pilha e libera a memória
+void pop_scope() {
+    if (current_scope == NULL) return; 
+
+    Scope *old_scope = current_scope;
+    current_scope = current_scope->prev;
+    scope_counter--; 
+
+    // Libera a memória de todas as entradas de símbolo
+    SymbolEntry *current = old_scope->head;
+    SymbolEntry *next;
+    while (current != NULL) {
+        next = current->next;
+        free(current->id); // Libera a string do identificador
+        free(current);
+        current = next;
+    }
+    free(old_scope);
+}
+
+// Verifica se um símbolo foi declarado *apenas* no escopo atual
+bool check_redeclaration(const char *id) {
+    if (current_scope == NULL) return false;
+    SymbolEntry *current = current_scope->head;
+    while (current != NULL) {
+        if (strcmp(current->id, id) == 0) {
+            return true; // Redeclaração encontrada
+        }
+        current = current->next;
+    }
+    return false;
+}
+
+// Insere um novo símbolo no escopo atual
+SymbolEntry* insert_symbol(const char *id, Tipo tipo) {
+    if (current_scope == NULL) {
+        yysemanticerror("Erro interno: Tentativa de inserir sem escopo ativo.", line, column);
+        return NULL;
+    }
+
+    SymbolEntry *new_entry = (SymbolEntry *)malloc(sizeof(SymbolEntry));
+    if (!new_entry) {
+        yysemanticerror("Erro interno: Memória insuficiente para nova entrada de símbolo.", line, column);
+        exit(1);
+    }
+
+    new_entry->id = strdup(id);
+    new_entry->tipo = tipo;
+    new_entry->escopo_level = current_scope->level;
+
+    // Insere no início da lista de símbolos do escopo atual
+    new_entry->next = current_scope->head;
+    current_scope->head = new_entry;
+    
+    return new_entry;
+}
+
+// Procura um símbolo (do escopo atual ao global)
+SymbolEntry* lookup_symbol(const char *id) {
+    Scope *scope = current_scope;
+    while (scope != NULL) {
+        SymbolEntry *current = scope->head;
+        while (current != NULL) {
+            if (strcmp(current->id, id) == 0) {
+                return current; 
+            }
+            current = current->next;
+        }
+        scope = scope->prev; // Desce para o escopo pai
+    }
+    return NULL; 
+}
+
+
+// Funções de exibição (substitui showTable da Fase 1)
+void show_ts_recursive(Scope *scope) {
+    if (!scope) return;
+    
+    show_ts_recursive(scope->prev); 
+
+    printf("--- Escopo Nível %d ---\n", scope->level);
+    SymbolEntry *current = scope->head;
+    int count = 1;
+    while (current) {
+        printf("%d. ID: %s | Tipo: %s | Nível: %d\n", count++, current->id, tipo_to_string(current->tipo), current->escopo_level);
+        current = current->next;
+    }
+}
+
+void show_ts() {
+    printf("\n\n=============== Tabela de Símbolos Completa ==============\n");
+    // Iniciamos a impressão a partir do escopo atual
+    show_ts_recursive(current_scope);
+    printf("==========================================================\n");
+}
+
 void yyerror(char *s) {
     fprintf(stderr, "Erro Sintatico na Linha %d, Coluna %d: %s\n", line, column, s);
 }
@@ -203,7 +392,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    initTable(&table);
+    init_table();
 
     yyin = fopen(argv[1], "r");
     if (!yyin) {
@@ -217,7 +406,7 @@ int main(int argc, char *argv[]) {
     printf("Analise sintatica concluida com sucesso!\n");
     printf("========================================\n");
 
-    showTable(&table);
+    show_ts();
 
     fclose(yyin);
     return 0;
