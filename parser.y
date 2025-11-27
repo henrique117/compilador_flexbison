@@ -207,7 +207,10 @@ expr:
     /* Logicos */
     | expr T_AND expr
     | expr T_OR expr
-    | T_NOT expr
+    | T_NOT expr {
+        // Propaga o valor semântico (tipo) da expressão interna ($2)
+        $$ = $2; 
+    }
     /* Relacionais */
     | expr T_EQUAL expr
     | expr T_NOT_EQUAL expr
@@ -216,10 +219,15 @@ expr:
     | expr T_LESSER_EQUAL expr
     | expr T_GREATER_EQUAL expr
     /* Unario */
-    | T_MINUS expr %prec UMINUS
+    | T_MINUS expr %prec UMINUS {
+        // Propaga o valor semântico (tipo) da expressão interna ($2)
+        $$ = $2; 
+    }
     /* Parenteses */
-    | T_LEFT_PAREN expr T_RIGHT_PAREN
-    ;
+    | T_LEFT_PAREN expr T_RIGHT_PAREN {
+        // Propaga o valor semântico (tipo) da expressão interna ($2)
+        $$ = $2;
+    }
 
 primary_expr : 
     T_NUMBER {
