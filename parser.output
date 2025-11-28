@@ -4,6 +4,15 @@ Terminals unused in grammar
    IFX
 
 
+Rules useless in parser due to conflicts
+
+    8 $@3: /* empty */
+
+
+State 9 conflicts: 9 shift/reduce, 1 reduce/reduce
+State 36 conflicts: 1 reduce/reduce
+
+
 Grammar
 
     0 $accept: program $end
@@ -13,93 +22,103 @@ Grammar
     2 stmt_list: stmt
     3          | stmt_list stmt
 
-    4 compound_stmt: T_LEFT_BRACKET T_RIGHT_BRACKET
-    5              | T_LEFT_BRACKET stmt_list T_RIGHT_BRACKET
-    6              | T_LEFT_BRACKET error T_RIGHT_BRACKET
+    4 $@1: /* empty */
 
-    7 stmt: matched_stmt
-    8     | open_stmt
-    9     | error T_SEMICOLON
+    5 compound_stmt: T_LEFT_BRACKET $@1 T_RIGHT_BRACKET
 
-   10 matched_stmt: simple_stmt
-   11             | compound_stmt
-   12             | T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt
-   13             | T_WHILE T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt
-   14             | T_WHILE T_LEFT_PAREN expr error matched_stmt
-   15             | T_WHILE error expr T_RIGHT_PAREN matched_stmt
+    6 $@2: /* empty */
 
-   16 open_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN stmt
-   17          | T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE open_stmt
-   18          | T_IF T_LEFT_PAREN expr error stmt
-   19          | T_IF error expr T_RIGHT_PAREN stmt
+    7 compound_stmt: T_LEFT_BRACKET $@2 stmt_list T_RIGHT_BRACKET
 
-   20 simple_stmt: T_BOOLEAN T_ID T_ATRIBUTION expr T_SEMICOLON
-   21            | T_INT T_ID T_ATRIBUTION expr T_SEMICOLON
-   22            | T_INT T_ID T_ATRIBUTION error T_SEMICOLON
-   23            | T_BOOLEAN T_ID T_ATRIBUTION error T_SEMICOLON
-   24            | T_PRINT T_LEFT_PAREN expr T_RIGHT_PAREN T_SEMICOLON
-   25            | T_PRINT T_LEFT_PAREN expr error T_SEMICOLON
-   26            | T_ID T_ATRIBUTION expr T_SEMICOLON
-   27            | T_READ T_LEFT_PAREN T_ID T_RIGHT_PAREN T_SEMICOLON
+    8 $@3: /* empty */
 
-   28 expr: primary_expr
-   29     | expr T_SUM expr
-   30     | expr T_MINUS expr
-   31     | expr T_MULT expr
-   32     | expr T_DIV expr
-   33     | expr T_AND expr
-   34     | expr T_OR expr
-   35     | T_NOT expr
-   36     | expr T_EQUAL expr
-   37     | expr T_NOT_EQUAL expr
-   38     | expr T_LESSER expr
-   39     | expr T_GREATER expr
-   40     | expr T_LESSER_EQUAL expr
-   41     | expr T_GREATER_EQUAL expr
-   42     | T_MINUS expr
-   43     | T_LEFT_PAREN expr T_RIGHT_PAREN
+    9 compound_stmt: T_LEFT_BRACKET $@3 error T_RIGHT_BRACKET
 
-   44 primary_expr: T_NUMBER
-   45             | T_ID
-   46             | T_TRUE
-   47             | T_FALSE
+   10 stmt: matched_stmt
+   11     | open_stmt
+   12     | error T_SEMICOLON
+   13     | T_LEFT_BRACKET stmt_list error
+
+   14 matched_stmt: simple_stmt
+   15             | compound_stmt
+   16             | T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt
+   17             | error T_ELSE matched_stmt
+   18             | T_WHILE T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt
+   19             | T_WHILE T_LEFT_PAREN expr error matched_stmt
+   20             | T_WHILE error expr T_RIGHT_PAREN matched_stmt
+
+   21 open_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN stmt
+   22          | T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE open_stmt
+   23          | T_IF T_LEFT_PAREN expr error stmt
+   24          | T_IF error expr T_RIGHT_PAREN stmt
+
+   25 simple_stmt: T_BOOLEAN T_ID T_ATRIBUTION expr T_SEMICOLON
+   26            | T_INT T_ID T_ATRIBUTION expr T_SEMICOLON
+   27            | T_INT T_ID T_ATRIBUTION error T_SEMICOLON
+   28            | T_BOOLEAN T_ID T_ATRIBUTION error T_SEMICOLON
+   29            | T_PRINT T_LEFT_PAREN expr T_RIGHT_PAREN T_SEMICOLON
+   30            | T_PRINT T_LEFT_PAREN expr error T_SEMICOLON
+   31            | T_ID T_ATRIBUTION expr T_SEMICOLON
+   32            | T_READ T_LEFT_PAREN T_ID T_RIGHT_PAREN T_SEMICOLON
+
+   33 expr: primary_expr
+   34     | expr T_SUM expr
+   35     | expr T_MINUS expr
+   36     | expr T_MULT expr
+   37     | expr T_DIV expr
+   38     | expr T_AND expr
+   39     | expr T_OR expr
+   40     | T_NOT expr
+   41     | expr T_EQUAL expr
+   42     | expr T_NOT_EQUAL expr
+   43     | expr T_LESSER expr
+   44     | expr T_GREATER expr
+   45     | expr T_LESSER_EQUAL expr
+   46     | expr T_GREATER_EQUAL expr
+   47     | T_MINUS expr
+   48     | T_LEFT_PAREN expr T_RIGHT_PAREN
+
+   49 primary_expr: T_NUMBER
+   50             | T_ID
+   51             | T_TRUE
+   52             | T_FALSE
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
-error (256) 6 9 14 15 18 19 22 23 25
-T_ID (258) 20 21 22 23 26 27 45
-T_NUMBER (259) 44
-T_IF (260) 12 16 17 18 19
-T_ELSE (261) 12 17
-T_WHILE (262) 13 14 15
-T_PRINT (263) 24 25
-T_READ (264) 27
-T_TRUE (265) 46
-T_FALSE (266) 47
-T_INT (267) 21 22
-T_BOOLEAN (268) 20 23
-T_EQUAL (269) 36
-T_NOT_EQUAL (270) 37
-T_LESSER_EQUAL (271) 40
-T_GREATER_EQUAL (272) 41
-T_LESSER (273) 38
-T_GREATER (274) 39
-T_AND (275) 33
-T_OR (276) 34
-T_NOT (277) 35
-T_ATRIBUTION (278) 20 21 22 23 26
-T_LEFT_PAREN (279) 12 13 14 16 17 18 24 25 27 43
-T_RIGHT_PAREN (280) 12 13 15 16 17 19 24 27 43
-T_LEFT_BRACKET (281) 4 5 6
-T_RIGHT_BRACKET (282) 4 5 6
-T_SEMICOLON (283) 9 20 21 22 23 24 25 26 27
+error (256) 9 12 13 17 19 20 23 24 27 28 30
+T_ID (258) 25 26 27 28 31 32 50
+T_NUMBER (259) 49
+T_IF (260) 16 21 22 23 24
+T_ELSE (261) 16 17 22
+T_WHILE (262) 18 19 20
+T_PRINT (263) 29 30
+T_READ (264) 32
+T_TRUE (265) 51
+T_FALSE (266) 52
+T_INT (267) 26 27
+T_BOOLEAN (268) 25 28
+T_EQUAL (269) 41
+T_NOT_EQUAL (270) 42
+T_LESSER_EQUAL (271) 45
+T_GREATER_EQUAL (272) 46
+T_LESSER (273) 43
+T_GREATER (274) 44
+T_AND (275) 38
+T_OR (276) 39
+T_NOT (277) 40
+T_ATRIBUTION (278) 25 26 27 28 31
+T_LEFT_PAREN (279) 16 18 19 21 22 23 29 30 32 48
+T_RIGHT_PAREN (280) 16 18 20 21 22 24 29 32 48
+T_LEFT_BRACKET (281) 5 7 9 13
+T_RIGHT_BRACKET (282) 5 7 9
+T_SEMICOLON (283) 12 25 26 27 28 29 30 31 32
 T_COMMA (284)
-T_MINUS (285) 30 42
-T_SUM (286) 29
-T_DIV (287) 32
-T_MULT (288) 31
+T_MINUS (285) 35 47
+T_SUM (286) 34
+T_DIV (287) 37
+T_MULT (288) 36
 UMINUS (289)
 IFX (290)
 
@@ -111,26 +130,32 @@ $accept (36)
 program (37)
     on left: 1, on right: 0
 stmt_list (38)
-    on left: 2 3, on right: 1 3 5
+    on left: 2 3, on right: 1 3 7 13
 compound_stmt (39)
-    on left: 4 5 6, on right: 11
-stmt (40)
-    on left: 7 8 9, on right: 2 3 16 18 19
-matched_stmt (41)
-    on left: 10 11 12 13 14 15, on right: 7 12 13 14 15 17
-open_stmt (42)
-    on left: 16 17 18 19, on right: 8 17
-simple_stmt (43)
-    on left: 20 21 22 23 24 25 26 27, on right: 10
-expr (44)
-    on left: 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43, on right:
-    12 13 14 15 16 17 18 19 20 21 24 25 26 29 30 31 32 33 34 35 36
-    37 38 39 40 41 42 43
-primary_expr (45)
-    on left: 44 45 46 47, on right: 28
+    on left: 5 7 9, on right: 15
+$@1 (40)
+    on left: 4, on right: 5
+$@2 (41)
+    on left: 6, on right: 7
+$@3 (42)
+    on left: 8, on right: 9
+stmt (43)
+    on left: 10 11 12 13, on right: 2 3 21 23 24
+matched_stmt (44)
+    on left: 14 15 16 17 18 19 20, on right: 10 16 17 18 19 20 22
+open_stmt (45)
+    on left: 21 22 23 24, on right: 11 22
+simple_stmt (46)
+    on left: 25 26 27 28 29 30 31 32, on right: 14
+expr (47)
+    on left: 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48, on right:
+    16 18 19 20 21 22 23 24 25 26 29 30 31 34 35 36 37 38 39 40 41
+    42 43 44 45 46 47 48
+primary_expr (48)
+    on left: 49 50 51 52, on right: 33
 
 
-state 0
+State 0
 
     0 $accept: . program $end
 
@@ -153,106 +178,123 @@ state 0
     simple_stmt    go to state 16
 
 
-state 1
+State 1
 
-    9 stmt: error . T_SEMICOLON
+   12 stmt: error . T_SEMICOLON
+   17 matched_stmt: error . T_ELSE matched_stmt
 
-    T_SEMICOLON  shift, and go to state 17
-
-
-state 2
-
-   26 simple_stmt: T_ID . T_ATRIBUTION expr T_SEMICOLON
-
-    T_ATRIBUTION  shift, and go to state 18
+    T_ELSE       shift, and go to state 17
+    T_SEMICOLON  shift, and go to state 18
 
 
-state 3
+State 2
 
-   12 matched_stmt: T_IF . T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt
-   16 open_stmt: T_IF . T_LEFT_PAREN expr T_RIGHT_PAREN stmt
-   17          | T_IF . T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE open_stmt
-   18          | T_IF . T_LEFT_PAREN expr error stmt
-   19          | T_IF . error expr T_RIGHT_PAREN stmt
+   31 simple_stmt: T_ID . T_ATRIBUTION expr T_SEMICOLON
 
-    error         shift, and go to state 19
-    T_LEFT_PAREN  shift, and go to state 20
+    T_ATRIBUTION  shift, and go to state 19
 
 
-state 4
+State 3
 
-   13 matched_stmt: T_WHILE . T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt
-   14             | T_WHILE . T_LEFT_PAREN expr error matched_stmt
-   15             | T_WHILE . error expr T_RIGHT_PAREN matched_stmt
+   16 matched_stmt: T_IF . T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt
+   21 open_stmt: T_IF . T_LEFT_PAREN expr T_RIGHT_PAREN stmt
+   22          | T_IF . T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE open_stmt
+   23          | T_IF . T_LEFT_PAREN expr error stmt
+   24          | T_IF . error expr T_RIGHT_PAREN stmt
 
-    error         shift, and go to state 21
-    T_LEFT_PAREN  shift, and go to state 22
+    error         shift, and go to state 20
+    T_LEFT_PAREN  shift, and go to state 21
 
 
-state 5
+State 4
 
-   24 simple_stmt: T_PRINT . T_LEFT_PAREN expr T_RIGHT_PAREN T_SEMICOLON
-   25            | T_PRINT . T_LEFT_PAREN expr error T_SEMICOLON
+   18 matched_stmt: T_WHILE . T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt
+   19             | T_WHILE . T_LEFT_PAREN expr error matched_stmt
+   20             | T_WHILE . error expr T_RIGHT_PAREN matched_stmt
 
+    error         shift, and go to state 22
     T_LEFT_PAREN  shift, and go to state 23
 
 
-state 6
+State 5
 
-   27 simple_stmt: T_READ . T_LEFT_PAREN T_ID T_RIGHT_PAREN T_SEMICOLON
+   29 simple_stmt: T_PRINT . T_LEFT_PAREN expr T_RIGHT_PAREN T_SEMICOLON
+   30            | T_PRINT . T_LEFT_PAREN expr error T_SEMICOLON
 
     T_LEFT_PAREN  shift, and go to state 24
 
 
-state 7
+State 6
 
-   21 simple_stmt: T_INT . T_ID T_ATRIBUTION expr T_SEMICOLON
-   22            | T_INT . T_ID T_ATRIBUTION error T_SEMICOLON
+   32 simple_stmt: T_READ . T_LEFT_PAREN T_ID T_RIGHT_PAREN T_SEMICOLON
 
-    T_ID  shift, and go to state 25
+    T_LEFT_PAREN  shift, and go to state 25
 
 
-state 8
+State 7
 
-   20 simple_stmt: T_BOOLEAN . T_ID T_ATRIBUTION expr T_SEMICOLON
-   23            | T_BOOLEAN . T_ID T_ATRIBUTION error T_SEMICOLON
+   26 simple_stmt: T_INT . T_ID T_ATRIBUTION expr T_SEMICOLON
+   27            | T_INT . T_ID T_ATRIBUTION error T_SEMICOLON
 
     T_ID  shift, and go to state 26
 
 
-state 9
+State 8
 
-    4 compound_stmt: T_LEFT_BRACKET . T_RIGHT_BRACKET
-    5              | T_LEFT_BRACKET . stmt_list T_RIGHT_BRACKET
-    6              | T_LEFT_BRACKET . error T_RIGHT_BRACKET
+   25 simple_stmt: T_BOOLEAN . T_ID T_ATRIBUTION expr T_SEMICOLON
+   28            | T_BOOLEAN . T_ID T_ATRIBUTION error T_SEMICOLON
 
-    error            shift, and go to state 27
-    T_ID             shift, and go to state 2
-    T_IF             shift, and go to state 3
-    T_WHILE          shift, and go to state 4
-    T_PRINT          shift, and go to state 5
-    T_READ           shift, and go to state 6
-    T_INT            shift, and go to state 7
-    T_BOOLEAN        shift, and go to state 8
-    T_LEFT_BRACKET   shift, and go to state 9
-    T_RIGHT_BRACKET  shift, and go to state 28
+    T_ID  shift, and go to state 27
 
-    stmt_list      go to state 29
+
+State 9
+
+    5 compound_stmt: T_LEFT_BRACKET . $@1 T_RIGHT_BRACKET
+    7              | T_LEFT_BRACKET . $@2 stmt_list T_RIGHT_BRACKET
+    9              | T_LEFT_BRACKET . $@3 error T_RIGHT_BRACKET
+   13 stmt: T_LEFT_BRACKET . stmt_list error
+
+    error           shift, and go to state 1
+    T_ID            shift, and go to state 2
+    T_IF            shift, and go to state 3
+    T_WHILE         shift, and go to state 4
+    T_PRINT         shift, and go to state 5
+    T_READ          shift, and go to state 6
+    T_INT           shift, and go to state 7
+    T_BOOLEAN       shift, and go to state 8
+    T_LEFT_BRACKET  shift, and go to state 9
+
+    error            [reduce using rule 6 ($@2)]
+    error            [reduce using rule 8 ($@3)]
+    T_ID             [reduce using rule 6 ($@2)]
+    T_IF             [reduce using rule 6 ($@2)]
+    T_WHILE          [reduce using rule 6 ($@2)]
+    T_PRINT          [reduce using rule 6 ($@2)]
+    T_READ           [reduce using rule 6 ($@2)]
+    T_INT            [reduce using rule 6 ($@2)]
+    T_BOOLEAN        [reduce using rule 6 ($@2)]
+    T_LEFT_BRACKET   [reduce using rule 6 ($@2)]
+    T_RIGHT_BRACKET  reduce using rule 4 ($@1)
+
+    stmt_list      go to state 28
     compound_stmt  go to state 12
+    $@1            go to state 29
+    $@2            go to state 30
+    $@3            go to state 31
     stmt           go to state 13
     matched_stmt   go to state 14
     open_stmt      go to state 15
     simple_stmt    go to state 16
 
 
-state 10
+State 10
 
     0 $accept: program . $end
 
-    $end  shift, and go to state 30
+    $end  shift, and go to state 32
 
 
-state 11
+State 11
 
     1 program: stmt_list .
     3 stmt_list: stmt_list . stmt
@@ -270,198 +312,649 @@ state 11
     $end  reduce using rule 1 (program)
 
     compound_stmt  go to state 12
-    stmt           go to state 31
+    stmt           go to state 33
     matched_stmt   go to state 14
     open_stmt      go to state 15
     simple_stmt    go to state 16
 
 
-state 12
+State 12
 
-   11 matched_stmt: compound_stmt .
+   15 matched_stmt: compound_stmt .
 
-    $default  reduce using rule 11 (matched_stmt)
+    $default  reduce using rule 15 (matched_stmt)
 
 
-state 13
+State 13
 
     2 stmt_list: stmt .
 
     $default  reduce using rule 2 (stmt_list)
 
 
-state 14
+State 14
 
-    7 stmt: matched_stmt .
+   10 stmt: matched_stmt .
 
-    $default  reduce using rule 7 (stmt)
-
-
-state 15
-
-    8 stmt: open_stmt .
-
-    $default  reduce using rule 8 (stmt)
+    $default  reduce using rule 10 (stmt)
 
 
-state 16
+State 15
 
-   10 matched_stmt: simple_stmt .
+   11 stmt: open_stmt .
 
-    $default  reduce using rule 10 (matched_stmt)
-
-
-state 17
-
-    9 stmt: error T_SEMICOLON .
-
-    $default  reduce using rule 9 (stmt)
+    $default  reduce using rule 11 (stmt)
 
 
-state 18
+State 16
 
-   26 simple_stmt: T_ID T_ATRIBUTION . expr T_SEMICOLON
+   14 matched_stmt: simple_stmt .
 
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 39
-    primary_expr  go to state 40
+    $default  reduce using rule 14 (matched_stmt)
 
 
-state 19
+State 17
 
-   19 open_stmt: T_IF error . expr T_RIGHT_PAREN stmt
+   17 matched_stmt: error T_ELSE . matched_stmt
 
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
+    error           shift, and go to state 34
+    T_ID            shift, and go to state 2
+    T_IF            shift, and go to state 35
+    T_WHILE         shift, and go to state 4
+    T_PRINT         shift, and go to state 5
+    T_READ          shift, and go to state 6
+    T_INT           shift, and go to state 7
+    T_BOOLEAN       shift, and go to state 8
+    T_LEFT_BRACKET  shift, and go to state 36
 
-    expr          go to state 41
-    primary_expr  go to state 40
-
-
-state 20
-
-   12 matched_stmt: T_IF T_LEFT_PAREN . expr T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt
-   16 open_stmt: T_IF T_LEFT_PAREN . expr T_RIGHT_PAREN stmt
-   17          | T_IF T_LEFT_PAREN . expr T_RIGHT_PAREN matched_stmt T_ELSE open_stmt
-   18          | T_IF T_LEFT_PAREN . expr error stmt
-
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 42
-    primary_expr  go to state 40
+    compound_stmt  go to state 12
+    matched_stmt   go to state 37
+    simple_stmt    go to state 16
 
 
-state 21
+State 18
 
-   15 matched_stmt: T_WHILE error . expr T_RIGHT_PAREN matched_stmt
+   12 stmt: error T_SEMICOLON .
 
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 43
-    primary_expr  go to state 40
+    $default  reduce using rule 12 (stmt)
 
 
-state 22
+State 19
 
-   13 matched_stmt: T_WHILE T_LEFT_PAREN . expr T_RIGHT_PAREN matched_stmt
-   14             | T_WHILE T_LEFT_PAREN . expr error matched_stmt
+   31 simple_stmt: T_ID T_ATRIBUTION . expr T_SEMICOLON
 
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 44
-    primary_expr  go to state 40
-
-
-state 23
-
-   24 simple_stmt: T_PRINT T_LEFT_PAREN . expr T_RIGHT_PAREN T_SEMICOLON
-   25            | T_PRINT T_LEFT_PAREN . expr error T_SEMICOLON
-
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
 
     expr          go to state 45
-    primary_expr  go to state 40
+    primary_expr  go to state 46
 
 
-state 24
+State 20
 
-   27 simple_stmt: T_READ T_LEFT_PAREN . T_ID T_RIGHT_PAREN T_SEMICOLON
+   24 open_stmt: T_IF error . expr T_RIGHT_PAREN stmt
 
-    T_ID  shift, and go to state 46
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
 
-
-state 25
-
-   21 simple_stmt: T_INT T_ID . T_ATRIBUTION expr T_SEMICOLON
-   22            | T_INT T_ID . T_ATRIBUTION error T_SEMICOLON
-
-    T_ATRIBUTION  shift, and go to state 47
-
-
-state 26
-
-   20 simple_stmt: T_BOOLEAN T_ID . T_ATRIBUTION expr T_SEMICOLON
-   23            | T_BOOLEAN T_ID . T_ATRIBUTION error T_SEMICOLON
-
-    T_ATRIBUTION  shift, and go to state 48
+    expr          go to state 47
+    primary_expr  go to state 46
 
 
-state 27
+State 21
 
-    6 compound_stmt: T_LEFT_BRACKET error . T_RIGHT_BRACKET
-    9 stmt: error . T_SEMICOLON
+   16 matched_stmt: T_IF T_LEFT_PAREN . expr T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt
+   21 open_stmt: T_IF T_LEFT_PAREN . expr T_RIGHT_PAREN stmt
+   22          | T_IF T_LEFT_PAREN . expr T_RIGHT_PAREN matched_stmt T_ELSE open_stmt
+   23          | T_IF T_LEFT_PAREN . expr error stmt
 
-    T_RIGHT_BRACKET  shift, and go to state 49
-    T_SEMICOLON      shift, and go to state 17
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
+
+    expr          go to state 48
+    primary_expr  go to state 46
 
 
-state 28
+State 22
 
-    4 compound_stmt: T_LEFT_BRACKET T_RIGHT_BRACKET .
+   20 matched_stmt: T_WHILE error . expr T_RIGHT_PAREN matched_stmt
 
-    $default  reduce using rule 4 (compound_stmt)
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
+
+    expr          go to state 49
+    primary_expr  go to state 46
 
 
-state 29
+State 23
+
+   18 matched_stmt: T_WHILE T_LEFT_PAREN . expr T_RIGHT_PAREN matched_stmt
+   19             | T_WHILE T_LEFT_PAREN . expr error matched_stmt
+
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
+
+    expr          go to state 50
+    primary_expr  go to state 46
+
+
+State 24
+
+   29 simple_stmt: T_PRINT T_LEFT_PAREN . expr T_RIGHT_PAREN T_SEMICOLON
+   30            | T_PRINT T_LEFT_PAREN . expr error T_SEMICOLON
+
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
+
+    expr          go to state 51
+    primary_expr  go to state 46
+
+
+State 25
+
+   32 simple_stmt: T_READ T_LEFT_PAREN . T_ID T_RIGHT_PAREN T_SEMICOLON
+
+    T_ID  shift, and go to state 52
+
+
+State 26
+
+   26 simple_stmt: T_INT T_ID . T_ATRIBUTION expr T_SEMICOLON
+   27            | T_INT T_ID . T_ATRIBUTION error T_SEMICOLON
+
+    T_ATRIBUTION  shift, and go to state 53
+
+
+State 27
+
+   25 simple_stmt: T_BOOLEAN T_ID . T_ATRIBUTION expr T_SEMICOLON
+   28            | T_BOOLEAN T_ID . T_ATRIBUTION error T_SEMICOLON
+
+    T_ATRIBUTION  shift, and go to state 54
+
+
+State 28
 
     3 stmt_list: stmt_list . stmt
-    5 compound_stmt: T_LEFT_BRACKET stmt_list . T_RIGHT_BRACKET
+   13 stmt: T_LEFT_BRACKET stmt_list . error
+
+    error           shift, and go to state 55
+    T_ID            shift, and go to state 2
+    T_IF            shift, and go to state 3
+    T_WHILE         shift, and go to state 4
+    T_PRINT         shift, and go to state 5
+    T_READ          shift, and go to state 6
+    T_INT           shift, and go to state 7
+    T_BOOLEAN       shift, and go to state 8
+    T_LEFT_BRACKET  shift, and go to state 9
+
+    compound_stmt  go to state 12
+    stmt           go to state 33
+    matched_stmt   go to state 14
+    open_stmt      go to state 15
+    simple_stmt    go to state 16
+
+
+State 29
+
+    5 compound_stmt: T_LEFT_BRACKET $@1 . T_RIGHT_BRACKET
+
+    T_RIGHT_BRACKET  shift, and go to state 56
+
+
+State 30
+
+    7 compound_stmt: T_LEFT_BRACKET $@2 . stmt_list T_RIGHT_BRACKET
+
+    error           shift, and go to state 1
+    T_ID            shift, and go to state 2
+    T_IF            shift, and go to state 3
+    T_WHILE         shift, and go to state 4
+    T_PRINT         shift, and go to state 5
+    T_READ          shift, and go to state 6
+    T_INT           shift, and go to state 7
+    T_BOOLEAN       shift, and go to state 8
+    T_LEFT_BRACKET  shift, and go to state 9
+
+    stmt_list      go to state 57
+    compound_stmt  go to state 12
+    stmt           go to state 13
+    matched_stmt   go to state 14
+    open_stmt      go to state 15
+    simple_stmt    go to state 16
+
+
+State 31
+
+    9 compound_stmt: T_LEFT_BRACKET $@3 . error T_RIGHT_BRACKET
+
+    error  shift, and go to state 58
+
+
+State 32
+
+    0 $accept: program $end .
+
+    $default  accept
+
+
+State 33
+
+    3 stmt_list: stmt_list stmt .
+
+    $default  reduce using rule 3 (stmt_list)
+
+
+State 34
+
+   17 matched_stmt: error . T_ELSE matched_stmt
+
+    T_ELSE  shift, and go to state 17
+
+
+State 35
+
+   16 matched_stmt: T_IF . T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt
+
+    T_LEFT_PAREN  shift, and go to state 59
+
+
+State 36
+
+    5 compound_stmt: T_LEFT_BRACKET . $@1 T_RIGHT_BRACKET
+    7              | T_LEFT_BRACKET . $@2 stmt_list T_RIGHT_BRACKET
+    9              | T_LEFT_BRACKET . $@3 error T_RIGHT_BRACKET
+
+    error            reduce using rule 6 ($@2)
+    error            [reduce using rule 8 ($@3)]
+    T_RIGHT_BRACKET  reduce using rule 4 ($@1)
+    $default         reduce using rule 6 ($@2)
+
+    $@1  go to state 29
+    $@2  go to state 30
+    $@3  go to state 31
+
+
+State 37
+
+   17 matched_stmt: error T_ELSE matched_stmt .
+
+    $default  reduce using rule 17 (matched_stmt)
+
+
+State 38
+
+   50 primary_expr: T_ID .
+
+    $default  reduce using rule 50 (primary_expr)
+
+
+State 39
+
+   49 primary_expr: T_NUMBER .
+
+    $default  reduce using rule 49 (primary_expr)
+
+
+State 40
+
+   51 primary_expr: T_TRUE .
+
+    $default  reduce using rule 51 (primary_expr)
+
+
+State 41
+
+   52 primary_expr: T_FALSE .
+
+    $default  reduce using rule 52 (primary_expr)
+
+
+State 42
+
+   40 expr: T_NOT . expr
+
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
+
+    expr          go to state 60
+    primary_expr  go to state 46
+
+
+State 43
+
+   48 expr: T_LEFT_PAREN . expr T_RIGHT_PAREN
+
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
+
+    expr          go to state 61
+    primary_expr  go to state 46
+
+
+State 44
+
+   47 expr: T_MINUS . expr
+
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
+
+    expr          go to state 62
+    primary_expr  go to state 46
+
+
+State 45
+
+   31 simple_stmt: T_ID T_ATRIBUTION expr . T_SEMICOLON
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+
+    T_EQUAL          shift, and go to state 63
+    T_NOT_EQUAL      shift, and go to state 64
+    T_LESSER_EQUAL   shift, and go to state 65
+    T_GREATER_EQUAL  shift, and go to state 66
+    T_LESSER         shift, and go to state 67
+    T_GREATER        shift, and go to state 68
+    T_AND            shift, and go to state 69
+    T_OR             shift, and go to state 70
+    T_SEMICOLON      shift, and go to state 71
+    T_MINUS          shift, and go to state 72
+    T_SUM            shift, and go to state 73
+    T_DIV            shift, and go to state 74
+    T_MULT           shift, and go to state 75
+
+
+State 46
+
+   33 expr: primary_expr .
+
+    $default  reduce using rule 33 (expr)
+
+
+State 47
+
+   24 open_stmt: T_IF error expr . T_RIGHT_PAREN stmt
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+
+    T_EQUAL          shift, and go to state 63
+    T_NOT_EQUAL      shift, and go to state 64
+    T_LESSER_EQUAL   shift, and go to state 65
+    T_GREATER_EQUAL  shift, and go to state 66
+    T_LESSER         shift, and go to state 67
+    T_GREATER        shift, and go to state 68
+    T_AND            shift, and go to state 69
+    T_OR             shift, and go to state 70
+    T_RIGHT_PAREN    shift, and go to state 76
+    T_MINUS          shift, and go to state 72
+    T_SUM            shift, and go to state 73
+    T_DIV            shift, and go to state 74
+    T_MULT           shift, and go to state 75
+
+
+State 48
+
+   16 matched_stmt: T_IF T_LEFT_PAREN expr . T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt
+   21 open_stmt: T_IF T_LEFT_PAREN expr . T_RIGHT_PAREN stmt
+   22          | T_IF T_LEFT_PAREN expr . T_RIGHT_PAREN matched_stmt T_ELSE open_stmt
+   23          | T_IF T_LEFT_PAREN expr . error stmt
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+
+    error            shift, and go to state 77
+    T_EQUAL          shift, and go to state 63
+    T_NOT_EQUAL      shift, and go to state 64
+    T_LESSER_EQUAL   shift, and go to state 65
+    T_GREATER_EQUAL  shift, and go to state 66
+    T_LESSER         shift, and go to state 67
+    T_GREATER        shift, and go to state 68
+    T_AND            shift, and go to state 69
+    T_OR             shift, and go to state 70
+    T_RIGHT_PAREN    shift, and go to state 78
+    T_MINUS          shift, and go to state 72
+    T_SUM            shift, and go to state 73
+    T_DIV            shift, and go to state 74
+    T_MULT           shift, and go to state 75
+
+
+State 49
+
+   20 matched_stmt: T_WHILE error expr . T_RIGHT_PAREN matched_stmt
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+
+    T_EQUAL          shift, and go to state 63
+    T_NOT_EQUAL      shift, and go to state 64
+    T_LESSER_EQUAL   shift, and go to state 65
+    T_GREATER_EQUAL  shift, and go to state 66
+    T_LESSER         shift, and go to state 67
+    T_GREATER        shift, and go to state 68
+    T_AND            shift, and go to state 69
+    T_OR             shift, and go to state 70
+    T_RIGHT_PAREN    shift, and go to state 79
+    T_MINUS          shift, and go to state 72
+    T_SUM            shift, and go to state 73
+    T_DIV            shift, and go to state 74
+    T_MULT           shift, and go to state 75
+
+
+State 50
+
+   18 matched_stmt: T_WHILE T_LEFT_PAREN expr . T_RIGHT_PAREN matched_stmt
+   19             | T_WHILE T_LEFT_PAREN expr . error matched_stmt
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+
+    error            shift, and go to state 80
+    T_EQUAL          shift, and go to state 63
+    T_NOT_EQUAL      shift, and go to state 64
+    T_LESSER_EQUAL   shift, and go to state 65
+    T_GREATER_EQUAL  shift, and go to state 66
+    T_LESSER         shift, and go to state 67
+    T_GREATER        shift, and go to state 68
+    T_AND            shift, and go to state 69
+    T_OR             shift, and go to state 70
+    T_RIGHT_PAREN    shift, and go to state 81
+    T_MINUS          shift, and go to state 72
+    T_SUM            shift, and go to state 73
+    T_DIV            shift, and go to state 74
+    T_MULT           shift, and go to state 75
+
+
+State 51
+
+   29 simple_stmt: T_PRINT T_LEFT_PAREN expr . T_RIGHT_PAREN T_SEMICOLON
+   30            | T_PRINT T_LEFT_PAREN expr . error T_SEMICOLON
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+
+    error            shift, and go to state 82
+    T_EQUAL          shift, and go to state 63
+    T_NOT_EQUAL      shift, and go to state 64
+    T_LESSER_EQUAL   shift, and go to state 65
+    T_GREATER_EQUAL  shift, and go to state 66
+    T_LESSER         shift, and go to state 67
+    T_GREATER        shift, and go to state 68
+    T_AND            shift, and go to state 69
+    T_OR             shift, and go to state 70
+    T_RIGHT_PAREN    shift, and go to state 83
+    T_MINUS          shift, and go to state 72
+    T_SUM            shift, and go to state 73
+    T_DIV            shift, and go to state 74
+    T_MULT           shift, and go to state 75
+
+
+State 52
+
+   32 simple_stmt: T_READ T_LEFT_PAREN T_ID . T_RIGHT_PAREN T_SEMICOLON
+
+    T_RIGHT_PAREN  shift, and go to state 84
+
+
+State 53
+
+   26 simple_stmt: T_INT T_ID T_ATRIBUTION . expr T_SEMICOLON
+   27            | T_INT T_ID T_ATRIBUTION . error T_SEMICOLON
+
+    error         shift, and go to state 85
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
+
+    expr          go to state 86
+    primary_expr  go to state 46
+
+
+State 54
+
+   25 simple_stmt: T_BOOLEAN T_ID T_ATRIBUTION . expr T_SEMICOLON
+   28            | T_BOOLEAN T_ID T_ATRIBUTION . error T_SEMICOLON
+
+    error         shift, and go to state 87
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
+
+    expr          go to state 88
+    primary_expr  go to state 46
+
+
+State 55
+
+   12 stmt: error . T_SEMICOLON
+   13     | T_LEFT_BRACKET stmt_list error .
+   17 matched_stmt: error . T_ELSE matched_stmt
+
+    T_ELSE       shift, and go to state 17
+    T_SEMICOLON  shift, and go to state 18
+
+    $default  reduce using rule 13 (stmt)
+
+
+State 56
+
+    5 compound_stmt: T_LEFT_BRACKET $@1 T_RIGHT_BRACKET .
+
+    $default  reduce using rule 5 (compound_stmt)
+
+
+State 57
+
+    3 stmt_list: stmt_list . stmt
+    7 compound_stmt: T_LEFT_BRACKET $@2 stmt_list . T_RIGHT_BRACKET
 
     error            shift, and go to state 1
     T_ID             shift, and go to state 2
@@ -472,1289 +965,311 @@ state 29
     T_INT            shift, and go to state 7
     T_BOOLEAN        shift, and go to state 8
     T_LEFT_BRACKET   shift, and go to state 9
-    T_RIGHT_BRACKET  shift, and go to state 50
+    T_RIGHT_BRACKET  shift, and go to state 89
 
     compound_stmt  go to state 12
-    stmt           go to state 31
+    stmt           go to state 33
     matched_stmt   go to state 14
     open_stmt      go to state 15
     simple_stmt    go to state 16
 
 
-state 30
+State 58
 
-    0 $accept: program $end .
+    9 compound_stmt: T_LEFT_BRACKET $@3 error . T_RIGHT_BRACKET
 
-    $default  accept
+    T_RIGHT_BRACKET  shift, and go to state 90
 
 
-state 31
+State 59
 
-    3 stmt_list: stmt_list stmt .
+   16 matched_stmt: T_IF T_LEFT_PAREN . expr T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt
 
-    $default  reduce using rule 3 (stmt_list)
-
-
-state 32
-
-   45 primary_expr: T_ID .
-
-    $default  reduce using rule 45 (primary_expr)
-
-
-state 33
-
-   44 primary_expr: T_NUMBER .
-
-    $default  reduce using rule 44 (primary_expr)
-
-
-state 34
-
-   46 primary_expr: T_TRUE .
-
-    $default  reduce using rule 46 (primary_expr)
-
-
-state 35
-
-   47 primary_expr: T_FALSE .
-
-    $default  reduce using rule 47 (primary_expr)
-
-
-state 36
-
-   35 expr: T_NOT . expr
-
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 51
-    primary_expr  go to state 40
-
-
-state 37
-
-   43 expr: T_LEFT_PAREN . expr T_RIGHT_PAREN
-
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 52
-    primary_expr  go to state 40
-
-
-state 38
-
-   42 expr: T_MINUS . expr
-
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 53
-    primary_expr  go to state 40
-
-
-state 39
-
-   26 simple_stmt: T_ID T_ATRIBUTION expr . T_SEMICOLON
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
-
-    T_EQUAL          shift, and go to state 54
-    T_NOT_EQUAL      shift, and go to state 55
-    T_LESSER_EQUAL   shift, and go to state 56
-    T_GREATER_EQUAL  shift, and go to state 57
-    T_LESSER         shift, and go to state 58
-    T_GREATER        shift, and go to state 59
-    T_AND            shift, and go to state 60
-    T_OR             shift, and go to state 61
-    T_SEMICOLON      shift, and go to state 62
-    T_MINUS          shift, and go to state 63
-    T_SUM            shift, and go to state 64
-    T_DIV            shift, and go to state 65
-    T_MULT           shift, and go to state 66
-
-
-state 40
-
-   28 expr: primary_expr .
-
-    $default  reduce using rule 28 (expr)
-
-
-state 41
-
-   19 open_stmt: T_IF error expr . T_RIGHT_PAREN stmt
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
-
-    T_EQUAL          shift, and go to state 54
-    T_NOT_EQUAL      shift, and go to state 55
-    T_LESSER_EQUAL   shift, and go to state 56
-    T_GREATER_EQUAL  shift, and go to state 57
-    T_LESSER         shift, and go to state 58
-    T_GREATER        shift, and go to state 59
-    T_AND            shift, and go to state 60
-    T_OR             shift, and go to state 61
-    T_RIGHT_PAREN    shift, and go to state 67
-    T_MINUS          shift, and go to state 63
-    T_SUM            shift, and go to state 64
-    T_DIV            shift, and go to state 65
-    T_MULT           shift, and go to state 66
-
-
-state 42
-
-   12 matched_stmt: T_IF T_LEFT_PAREN expr . T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt
-   16 open_stmt: T_IF T_LEFT_PAREN expr . T_RIGHT_PAREN stmt
-   17          | T_IF T_LEFT_PAREN expr . T_RIGHT_PAREN matched_stmt T_ELSE open_stmt
-   18          | T_IF T_LEFT_PAREN expr . error stmt
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
-
-    error            shift, and go to state 68
-    T_EQUAL          shift, and go to state 54
-    T_NOT_EQUAL      shift, and go to state 55
-    T_LESSER_EQUAL   shift, and go to state 56
-    T_GREATER_EQUAL  shift, and go to state 57
-    T_LESSER         shift, and go to state 58
-    T_GREATER        shift, and go to state 59
-    T_AND            shift, and go to state 60
-    T_OR             shift, and go to state 61
-    T_RIGHT_PAREN    shift, and go to state 69
-    T_MINUS          shift, and go to state 63
-    T_SUM            shift, and go to state 64
-    T_DIV            shift, and go to state 65
-    T_MULT           shift, and go to state 66
-
-
-state 43
-
-   15 matched_stmt: T_WHILE error expr . T_RIGHT_PAREN matched_stmt
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
-
-    T_EQUAL          shift, and go to state 54
-    T_NOT_EQUAL      shift, and go to state 55
-    T_LESSER_EQUAL   shift, and go to state 56
-    T_GREATER_EQUAL  shift, and go to state 57
-    T_LESSER         shift, and go to state 58
-    T_GREATER        shift, and go to state 59
-    T_AND            shift, and go to state 60
-    T_OR             shift, and go to state 61
-    T_RIGHT_PAREN    shift, and go to state 70
-    T_MINUS          shift, and go to state 63
-    T_SUM            shift, and go to state 64
-    T_DIV            shift, and go to state 65
-    T_MULT           shift, and go to state 66
-
-
-state 44
-
-   13 matched_stmt: T_WHILE T_LEFT_PAREN expr . T_RIGHT_PAREN matched_stmt
-   14             | T_WHILE T_LEFT_PAREN expr . error matched_stmt
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
-
-    error            shift, and go to state 71
-    T_EQUAL          shift, and go to state 54
-    T_NOT_EQUAL      shift, and go to state 55
-    T_LESSER_EQUAL   shift, and go to state 56
-    T_GREATER_EQUAL  shift, and go to state 57
-    T_LESSER         shift, and go to state 58
-    T_GREATER        shift, and go to state 59
-    T_AND            shift, and go to state 60
-    T_OR             shift, and go to state 61
-    T_RIGHT_PAREN    shift, and go to state 72
-    T_MINUS          shift, and go to state 63
-    T_SUM            shift, and go to state 64
-    T_DIV            shift, and go to state 65
-    T_MULT           shift, and go to state 66
-
-
-state 45
-
-   24 simple_stmt: T_PRINT T_LEFT_PAREN expr . T_RIGHT_PAREN T_SEMICOLON
-   25            | T_PRINT T_LEFT_PAREN expr . error T_SEMICOLON
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
-
-    error            shift, and go to state 73
-    T_EQUAL          shift, and go to state 54
-    T_NOT_EQUAL      shift, and go to state 55
-    T_LESSER_EQUAL   shift, and go to state 56
-    T_GREATER_EQUAL  shift, and go to state 57
-    T_LESSER         shift, and go to state 58
-    T_GREATER        shift, and go to state 59
-    T_AND            shift, and go to state 60
-    T_OR             shift, and go to state 61
-    T_RIGHT_PAREN    shift, and go to state 74
-    T_MINUS          shift, and go to state 63
-    T_SUM            shift, and go to state 64
-    T_DIV            shift, and go to state 65
-    T_MULT           shift, and go to state 66
-
-
-state 46
-
-   27 simple_stmt: T_READ T_LEFT_PAREN T_ID . T_RIGHT_PAREN T_SEMICOLON
-
-    T_RIGHT_PAREN  shift, and go to state 75
-
-
-state 47
-
-   21 simple_stmt: T_INT T_ID T_ATRIBUTION . expr T_SEMICOLON
-   22            | T_INT T_ID T_ATRIBUTION . error T_SEMICOLON
-
-    error         shift, and go to state 76
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 77
-    primary_expr  go to state 40
-
-
-state 48
-
-   20 simple_stmt: T_BOOLEAN T_ID T_ATRIBUTION . expr T_SEMICOLON
-   23            | T_BOOLEAN T_ID T_ATRIBUTION . error T_SEMICOLON
-
-    error         shift, and go to state 78
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 79
-    primary_expr  go to state 40
-
-
-state 49
-
-    6 compound_stmt: T_LEFT_BRACKET error T_RIGHT_BRACKET .
-
-    $default  reduce using rule 6 (compound_stmt)
-
-
-state 50
-
-    5 compound_stmt: T_LEFT_BRACKET stmt_list T_RIGHT_BRACKET .
-
-    $default  reduce using rule 5 (compound_stmt)
-
-
-state 51
-
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   35     | T_NOT expr .
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
-
-    $default  reduce using rule 35 (expr)
-
-
-state 52
-
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
-   43     | T_LEFT_PAREN expr . T_RIGHT_PAREN
-
-    T_EQUAL          shift, and go to state 54
-    T_NOT_EQUAL      shift, and go to state 55
-    T_LESSER_EQUAL   shift, and go to state 56
-    T_GREATER_EQUAL  shift, and go to state 57
-    T_LESSER         shift, and go to state 58
-    T_GREATER        shift, and go to state 59
-    T_AND            shift, and go to state 60
-    T_OR             shift, and go to state 61
-    T_RIGHT_PAREN    shift, and go to state 80
-    T_MINUS          shift, and go to state 63
-    T_SUM            shift, and go to state 64
-    T_DIV            shift, and go to state 65
-    T_MULT           shift, and go to state 66
-
-
-state 53
-
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
-   42     | T_MINUS expr .
-
-    $default  reduce using rule 42 (expr)
-
-
-state 54
-
-   36 expr: expr T_EQUAL . expr
-
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 81
-    primary_expr  go to state 40
-
-
-state 55
-
-   37 expr: expr T_NOT_EQUAL . expr
-
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 82
-    primary_expr  go to state 40
-
-
-state 56
-
-   40 expr: expr T_LESSER_EQUAL . expr
-
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 83
-    primary_expr  go to state 40
-
-
-state 57
-
-   41 expr: expr T_GREATER_EQUAL . expr
-
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 84
-    primary_expr  go to state 40
-
-
-state 58
-
-   38 expr: expr T_LESSER . expr
-
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 85
-    primary_expr  go to state 40
-
-
-state 59
-
-   39 expr: expr T_GREATER . expr
-
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 86
-    primary_expr  go to state 40
-
-
-state 60
-
-   33 expr: expr T_AND . expr
-
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 87
-    primary_expr  go to state 40
-
-
-state 61
-
-   34 expr: expr T_OR . expr
-
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 88
-    primary_expr  go to state 40
-
-
-state 62
-
-   26 simple_stmt: T_ID T_ATRIBUTION expr T_SEMICOLON .
-
-    $default  reduce using rule 26 (simple_stmt)
-
-
-state 63
-
-   30 expr: expr T_MINUS . expr
-
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 89
-    primary_expr  go to state 40
-
-
-state 64
-
-   29 expr: expr T_SUM . expr
-
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 90
-    primary_expr  go to state 40
-
-
-state 65
-
-   32 expr: expr T_DIV . expr
-
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
 
     expr          go to state 91
-    primary_expr  go to state 40
-
-
-state 66
-
-   31 expr: expr T_MULT . expr
-
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 92
-    primary_expr  go to state 40
-
-
-state 67
-
-   19 open_stmt: T_IF error expr T_RIGHT_PAREN . stmt
-
-    error           shift, and go to state 1
-    T_ID            shift, and go to state 2
-    T_IF            shift, and go to state 3
-    T_WHILE         shift, and go to state 4
-    T_PRINT         shift, and go to state 5
-    T_READ          shift, and go to state 6
-    T_INT           shift, and go to state 7
-    T_BOOLEAN       shift, and go to state 8
-    T_LEFT_BRACKET  shift, and go to state 9
-
-    compound_stmt  go to state 12
-    stmt           go to state 93
-    matched_stmt   go to state 14
-    open_stmt      go to state 15
-    simple_stmt    go to state 16
-
-
-state 68
-
-   18 open_stmt: T_IF T_LEFT_PAREN expr error . stmt
-
-    error           shift, and go to state 1
-    T_ID            shift, and go to state 2
-    T_IF            shift, and go to state 3
-    T_WHILE         shift, and go to state 4
-    T_PRINT         shift, and go to state 5
-    T_READ          shift, and go to state 6
-    T_INT           shift, and go to state 7
-    T_BOOLEAN       shift, and go to state 8
-    T_LEFT_BRACKET  shift, and go to state 9
-
-    compound_stmt  go to state 12
-    stmt           go to state 94
-    matched_stmt   go to state 14
-    open_stmt      go to state 15
-    simple_stmt    go to state 16
-
-
-state 69
-
-   12 matched_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN . matched_stmt T_ELSE matched_stmt
-   16 open_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN . stmt
-   17          | T_IF T_LEFT_PAREN expr T_RIGHT_PAREN . matched_stmt T_ELSE open_stmt
-
-    error           shift, and go to state 1
-    T_ID            shift, and go to state 2
-    T_IF            shift, and go to state 3
-    T_WHILE         shift, and go to state 4
-    T_PRINT         shift, and go to state 5
-    T_READ          shift, and go to state 6
-    T_INT           shift, and go to state 7
-    T_BOOLEAN       shift, and go to state 8
-    T_LEFT_BRACKET  shift, and go to state 9
-
-    compound_stmt  go to state 12
-    stmt           go to state 95
-    matched_stmt   go to state 96
-    open_stmt      go to state 15
-    simple_stmt    go to state 16
-
-
-state 70
-
-   15 matched_stmt: T_WHILE error expr T_RIGHT_PAREN . matched_stmt
-
-    T_ID            shift, and go to state 2
-    T_IF            shift, and go to state 97
-    T_WHILE         shift, and go to state 4
-    T_PRINT         shift, and go to state 5
-    T_READ          shift, and go to state 6
-    T_INT           shift, and go to state 7
-    T_BOOLEAN       shift, and go to state 8
-    T_LEFT_BRACKET  shift, and go to state 9
-
-    compound_stmt  go to state 12
-    matched_stmt   go to state 98
-    simple_stmt    go to state 16
-
-
-state 71
-
-   14 matched_stmt: T_WHILE T_LEFT_PAREN expr error . matched_stmt
-
-    T_ID            shift, and go to state 2
-    T_IF            shift, and go to state 97
-    T_WHILE         shift, and go to state 4
-    T_PRINT         shift, and go to state 5
-    T_READ          shift, and go to state 6
-    T_INT           shift, and go to state 7
-    T_BOOLEAN       shift, and go to state 8
-    T_LEFT_BRACKET  shift, and go to state 9
-
-    compound_stmt  go to state 12
-    matched_stmt   go to state 99
-    simple_stmt    go to state 16
-
-
-state 72
-
-   13 matched_stmt: T_WHILE T_LEFT_PAREN expr T_RIGHT_PAREN . matched_stmt
-
-    T_ID            shift, and go to state 2
-    T_IF            shift, and go to state 97
-    T_WHILE         shift, and go to state 4
-    T_PRINT         shift, and go to state 5
-    T_READ          shift, and go to state 6
-    T_INT           shift, and go to state 7
-    T_BOOLEAN       shift, and go to state 8
-    T_LEFT_BRACKET  shift, and go to state 9
-
-    compound_stmt  go to state 12
-    matched_stmt   go to state 100
-    simple_stmt    go to state 16
-
-
-state 73
-
-   25 simple_stmt: T_PRINT T_LEFT_PAREN expr error . T_SEMICOLON
-
-    T_SEMICOLON  shift, and go to state 101
-
-
-state 74
-
-   24 simple_stmt: T_PRINT T_LEFT_PAREN expr T_RIGHT_PAREN . T_SEMICOLON
-
-    T_SEMICOLON  shift, and go to state 102
-
-
-state 75
-
-   27 simple_stmt: T_READ T_LEFT_PAREN T_ID T_RIGHT_PAREN . T_SEMICOLON
-
-    T_SEMICOLON  shift, and go to state 103
-
-
-state 76
-
-   22 simple_stmt: T_INT T_ID T_ATRIBUTION error . T_SEMICOLON
-
-    T_SEMICOLON  shift, and go to state 104
-
-
-state 77
-
-   21 simple_stmt: T_INT T_ID T_ATRIBUTION expr . T_SEMICOLON
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
-
-    T_EQUAL          shift, and go to state 54
-    T_NOT_EQUAL      shift, and go to state 55
-    T_LESSER_EQUAL   shift, and go to state 56
-    T_GREATER_EQUAL  shift, and go to state 57
-    T_LESSER         shift, and go to state 58
-    T_GREATER        shift, and go to state 59
-    T_AND            shift, and go to state 60
-    T_OR             shift, and go to state 61
-    T_SEMICOLON      shift, and go to state 105
-    T_MINUS          shift, and go to state 63
-    T_SUM            shift, and go to state 64
-    T_DIV            shift, and go to state 65
-    T_MULT           shift, and go to state 66
-
-
-state 78
-
-   23 simple_stmt: T_BOOLEAN T_ID T_ATRIBUTION error . T_SEMICOLON
-
-    T_SEMICOLON  shift, and go to state 106
-
-
-state 79
-
-   20 simple_stmt: T_BOOLEAN T_ID T_ATRIBUTION expr . T_SEMICOLON
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
-
-    T_EQUAL          shift, and go to state 54
-    T_NOT_EQUAL      shift, and go to state 55
-    T_LESSER_EQUAL   shift, and go to state 56
-    T_GREATER_EQUAL  shift, and go to state 57
-    T_LESSER         shift, and go to state 58
-    T_GREATER        shift, and go to state 59
-    T_AND            shift, and go to state 60
-    T_OR             shift, and go to state 61
-    T_SEMICOLON      shift, and go to state 107
-    T_MINUS          shift, and go to state 63
-    T_SUM            shift, and go to state 64
-    T_DIV            shift, and go to state 65
-    T_MULT           shift, and go to state 66
-
-
-state 80
-
-   43 expr: T_LEFT_PAREN expr T_RIGHT_PAREN .
-
-    $default  reduce using rule 43 (expr)
-
-
-state 81
-
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   36     | expr T_EQUAL expr .
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
-
-    T_LESSER_EQUAL   shift, and go to state 56
-    T_GREATER_EQUAL  shift, and go to state 57
-    T_LESSER         shift, and go to state 58
-    T_GREATER        shift, and go to state 59
-    T_MINUS          shift, and go to state 63
-    T_SUM            shift, and go to state 64
-    T_DIV            shift, and go to state 65
-    T_MULT           shift, and go to state 66
-
-    T_EQUAL      error (nonassociative)
-    T_NOT_EQUAL  error (nonassociative)
-
-    $default  reduce using rule 36 (expr)
-
-
-state 82
-
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   37     | expr T_NOT_EQUAL expr .
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
-
-    T_LESSER_EQUAL   shift, and go to state 56
-    T_GREATER_EQUAL  shift, and go to state 57
-    T_LESSER         shift, and go to state 58
-    T_GREATER        shift, and go to state 59
-    T_MINUS          shift, and go to state 63
-    T_SUM            shift, and go to state 64
-    T_DIV            shift, and go to state 65
-    T_MULT           shift, and go to state 66
-
-    T_EQUAL      error (nonassociative)
-    T_NOT_EQUAL  error (nonassociative)
-
-    $default  reduce using rule 37 (expr)
-
-
-state 83
-
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   40     | expr T_LESSER_EQUAL expr .
-   41     | expr . T_GREATER_EQUAL expr
-
-    T_MINUS  shift, and go to state 63
-    T_SUM    shift, and go to state 64
-    T_DIV    shift, and go to state 65
-    T_MULT   shift, and go to state 66
-
-    T_LESSER_EQUAL   error (nonassociative)
-    T_GREATER_EQUAL  error (nonassociative)
-    T_LESSER         error (nonassociative)
-    T_GREATER        error (nonassociative)
+    primary_expr  go to state 46
+
+
+State 60
+
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   40     | T_NOT expr .
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
 
     $default  reduce using rule 40 (expr)
 
 
-state 84
-
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
-   41     | expr T_GREATER_EQUAL expr .
-
-    T_MINUS  shift, and go to state 63
-    T_SUM    shift, and go to state 64
-    T_DIV    shift, and go to state 65
-    T_MULT   shift, and go to state 66
-
-    T_LESSER_EQUAL   error (nonassociative)
-    T_GREATER_EQUAL  error (nonassociative)
-    T_LESSER         error (nonassociative)
-    T_GREATER        error (nonassociative)
-
-    $default  reduce using rule 41 (expr)
-
-
-state 85
-
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   38     | expr T_LESSER expr .
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
-
-    T_MINUS  shift, and go to state 63
-    T_SUM    shift, and go to state 64
-    T_DIV    shift, and go to state 65
-    T_MULT   shift, and go to state 66
-
-    T_LESSER_EQUAL   error (nonassociative)
-    T_GREATER_EQUAL  error (nonassociative)
-    T_LESSER         error (nonassociative)
-    T_GREATER        error (nonassociative)
-
-    $default  reduce using rule 38 (expr)
-
-
-state 86
-
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   39     | expr T_GREATER expr .
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
-
-    T_MINUS  shift, and go to state 63
-    T_SUM    shift, and go to state 64
-    T_DIV    shift, and go to state 65
-    T_MULT   shift, and go to state 66
-
-    T_LESSER_EQUAL   error (nonassociative)
-    T_GREATER_EQUAL  error (nonassociative)
-    T_LESSER         error (nonassociative)
-    T_GREATER        error (nonassociative)
-
-    $default  reduce using rule 39 (expr)
-
-
-state 87
-
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   33     | expr T_AND expr .
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
-
-    T_EQUAL          shift, and go to state 54
-    T_NOT_EQUAL      shift, and go to state 55
-    T_LESSER_EQUAL   shift, and go to state 56
-    T_GREATER_EQUAL  shift, and go to state 57
-    T_LESSER         shift, and go to state 58
-    T_GREATER        shift, and go to state 59
-    T_MINUS          shift, and go to state 63
-    T_SUM            shift, and go to state 64
-    T_DIV            shift, and go to state 65
-    T_MULT           shift, and go to state 66
-
-    $default  reduce using rule 33 (expr)
-
-
-state 88
-
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   34     | expr T_OR expr .
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
-
-    T_EQUAL          shift, and go to state 54
-    T_NOT_EQUAL      shift, and go to state 55
-    T_LESSER_EQUAL   shift, and go to state 56
-    T_GREATER_EQUAL  shift, and go to state 57
-    T_LESSER         shift, and go to state 58
-    T_GREATER        shift, and go to state 59
-    T_AND            shift, and go to state 60
-    T_MINUS          shift, and go to state 63
-    T_SUM            shift, and go to state 64
-    T_DIV            shift, and go to state 65
-    T_MULT           shift, and go to state 66
-
-    $default  reduce using rule 34 (expr)
-
-
-state 89
-
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   30     | expr T_MINUS expr .
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
+State 61
+
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+   48     | T_LEFT_PAREN expr . T_RIGHT_PAREN
+
+    T_EQUAL          shift, and go to state 63
+    T_NOT_EQUAL      shift, and go to state 64
+    T_LESSER_EQUAL   shift, and go to state 65
+    T_GREATER_EQUAL  shift, and go to state 66
+    T_LESSER         shift, and go to state 67
+    T_GREATER        shift, and go to state 68
+    T_AND            shift, and go to state 69
+    T_OR             shift, and go to state 70
+    T_RIGHT_PAREN    shift, and go to state 92
+    T_MINUS          shift, and go to state 72
+    T_SUM            shift, and go to state 73
+    T_DIV            shift, and go to state 74
+    T_MULT           shift, and go to state 75
+
 
-    T_DIV   shift, and go to state 65
-    T_MULT  shift, and go to state 66
+State 62
 
-    $default  reduce using rule 30 (expr)
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+   47     | T_MINUS expr .
 
+    $default  reduce using rule 47 (expr)
 
-state 90
 
-   29 expr: expr . T_SUM expr
-   29     | expr T_SUM expr .
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
+State 63
 
-    T_DIV   shift, and go to state 65
-    T_MULT  shift, and go to state 66
+   41 expr: expr T_EQUAL . expr
 
-    $default  reduce using rule 29 (expr)
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
 
+    expr          go to state 93
+    primary_expr  go to state 46
 
-state 91
 
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   32     | expr T_DIV expr .
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
+State 64
 
-    $default  reduce using rule 32 (expr)
+   42 expr: expr T_NOT_EQUAL . expr
 
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
 
-state 92
+    expr          go to state 94
+    primary_expr  go to state 46
 
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   31     | expr T_MULT expr .
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
 
-    $default  reduce using rule 31 (expr)
+State 65
 
+   45 expr: expr T_LESSER_EQUAL . expr
 
-state 93
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
 
-   19 open_stmt: T_IF error expr T_RIGHT_PAREN stmt .
+    expr          go to state 95
+    primary_expr  go to state 46
 
-    $default  reduce using rule 19 (open_stmt)
 
+State 66
 
-state 94
+   46 expr: expr T_GREATER_EQUAL . expr
 
-   18 open_stmt: T_IF T_LEFT_PAREN expr error stmt .
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
 
-    $default  reduce using rule 18 (open_stmt)
+    expr          go to state 96
+    primary_expr  go to state 46
 
 
-state 95
+State 67
 
-   16 open_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN stmt .
+   43 expr: expr T_LESSER . expr
 
-    $default  reduce using rule 16 (open_stmt)
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
 
+    expr          go to state 97
+    primary_expr  go to state 46
 
-state 96
 
-    7 stmt: matched_stmt .
-   12 matched_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt . T_ELSE matched_stmt
-   17 open_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt . T_ELSE open_stmt
+State 68
 
-    T_ELSE  shift, and go to state 108
+   44 expr: expr T_GREATER . expr
 
-    $default  reduce using rule 7 (stmt)
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
 
+    expr          go to state 98
+    primary_expr  go to state 46
 
-state 97
 
-   12 matched_stmt: T_IF . T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt
+State 69
 
-    T_LEFT_PAREN  shift, and go to state 109
+   38 expr: expr T_AND . expr
 
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
 
-state 98
+    expr          go to state 99
+    primary_expr  go to state 46
 
-   15 matched_stmt: T_WHILE error expr T_RIGHT_PAREN matched_stmt .
 
-    $default  reduce using rule 15 (matched_stmt)
+State 70
 
+   39 expr: expr T_OR . expr
 
-state 99
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
 
-   14 matched_stmt: T_WHILE T_LEFT_PAREN expr error matched_stmt .
+    expr          go to state 100
+    primary_expr  go to state 46
 
-    $default  reduce using rule 14 (matched_stmt)
 
+State 71
 
-state 100
+   31 simple_stmt: T_ID T_ATRIBUTION expr T_SEMICOLON .
 
-   13 matched_stmt: T_WHILE T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt .
+    $default  reduce using rule 31 (simple_stmt)
 
-    $default  reduce using rule 13 (matched_stmt)
 
+State 72
 
-state 101
+   35 expr: expr T_MINUS . expr
 
-   25 simple_stmt: T_PRINT T_LEFT_PAREN expr error T_SEMICOLON .
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
 
-    $default  reduce using rule 25 (simple_stmt)
+    expr          go to state 101
+    primary_expr  go to state 46
 
 
-state 102
+State 73
 
-   24 simple_stmt: T_PRINT T_LEFT_PAREN expr T_RIGHT_PAREN T_SEMICOLON .
+   34 expr: expr T_SUM . expr
 
-    $default  reduce using rule 24 (simple_stmt)
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
 
+    expr          go to state 102
+    primary_expr  go to state 46
 
-state 103
 
-   27 simple_stmt: T_READ T_LEFT_PAREN T_ID T_RIGHT_PAREN T_SEMICOLON .
+State 74
 
-    $default  reduce using rule 27 (simple_stmt)
+   37 expr: expr T_DIV . expr
 
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
 
-state 104
+    expr          go to state 103
+    primary_expr  go to state 46
 
-   22 simple_stmt: T_INT T_ID T_ATRIBUTION error T_SEMICOLON .
 
-    $default  reduce using rule 22 (simple_stmt)
+State 75
 
+   36 expr: expr T_MULT . expr
 
-state 105
+    T_ID          shift, and go to state 38
+    T_NUMBER      shift, and go to state 39
+    T_TRUE        shift, and go to state 40
+    T_FALSE       shift, and go to state 41
+    T_NOT         shift, and go to state 42
+    T_LEFT_PAREN  shift, and go to state 43
+    T_MINUS       shift, and go to state 44
 
-   21 simple_stmt: T_INT T_ID T_ATRIBUTION expr T_SEMICOLON .
+    expr          go to state 104
+    primary_expr  go to state 46
 
-    $default  reduce using rule 21 (simple_stmt)
 
+State 76
 
-state 106
+   24 open_stmt: T_IF error expr T_RIGHT_PAREN . stmt
 
-   23 simple_stmt: T_BOOLEAN T_ID T_ATRIBUTION error T_SEMICOLON .
-
-    $default  reduce using rule 23 (simple_stmt)
-
-
-state 107
-
-   20 simple_stmt: T_BOOLEAN T_ID T_ATRIBUTION expr T_SEMICOLON .
-
-    $default  reduce using rule 20 (simple_stmt)
-
-
-state 108
-
-   12 matched_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE . matched_stmt
-   17 open_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE . open_stmt
-
+    error           shift, and go to state 1
     T_ID            shift, and go to state 2
     T_IF            shift, and go to state 3
     T_WHILE         shift, and go to state 4
@@ -1765,78 +1280,19 @@ state 108
     T_LEFT_BRACKET  shift, and go to state 9
 
     compound_stmt  go to state 12
-    matched_stmt   go to state 110
-    open_stmt      go to state 111
+    stmt           go to state 105
+    matched_stmt   go to state 14
+    open_stmt      go to state 15
     simple_stmt    go to state 16
 
 
-state 109
+State 77
 
-   12 matched_stmt: T_IF T_LEFT_PAREN . expr T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt
+   23 open_stmt: T_IF T_LEFT_PAREN expr error . stmt
 
-    T_ID          shift, and go to state 32
-    T_NUMBER      shift, and go to state 33
-    T_TRUE        shift, and go to state 34
-    T_FALSE       shift, and go to state 35
-    T_NOT         shift, and go to state 36
-    T_LEFT_PAREN  shift, and go to state 37
-    T_MINUS       shift, and go to state 38
-
-    expr          go to state 112
-    primary_expr  go to state 40
-
-
-state 110
-
-   12 matched_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt .
-
-    $default  reduce using rule 12 (matched_stmt)
-
-
-state 111
-
-   17 open_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE open_stmt .
-
-    $default  reduce using rule 17 (open_stmt)
-
-
-state 112
-
-   12 matched_stmt: T_IF T_LEFT_PAREN expr . T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt
-   29 expr: expr . T_SUM expr
-   30     | expr . T_MINUS expr
-   31     | expr . T_MULT expr
-   32     | expr . T_DIV expr
-   33     | expr . T_AND expr
-   34     | expr . T_OR expr
-   36     | expr . T_EQUAL expr
-   37     | expr . T_NOT_EQUAL expr
-   38     | expr . T_LESSER expr
-   39     | expr . T_GREATER expr
-   40     | expr . T_LESSER_EQUAL expr
-   41     | expr . T_GREATER_EQUAL expr
-
-    T_EQUAL          shift, and go to state 54
-    T_NOT_EQUAL      shift, and go to state 55
-    T_LESSER_EQUAL   shift, and go to state 56
-    T_GREATER_EQUAL  shift, and go to state 57
-    T_LESSER         shift, and go to state 58
-    T_GREATER        shift, and go to state 59
-    T_AND            shift, and go to state 60
-    T_OR             shift, and go to state 61
-    T_RIGHT_PAREN    shift, and go to state 113
-    T_MINUS          shift, and go to state 63
-    T_SUM            shift, and go to state 64
-    T_DIV            shift, and go to state 65
-    T_MULT           shift, and go to state 66
-
-
-state 113
-
-   12 matched_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN . matched_stmt T_ELSE matched_stmt
-
+    error           shift, and go to state 1
     T_ID            shift, and go to state 2
-    T_IF            shift, and go to state 97
+    T_IF            shift, and go to state 3
     T_WHILE         shift, and go to state 4
     T_PRINT         shift, and go to state 5
     T_READ          shift, and go to state 6
@@ -1845,23 +1301,21 @@ state 113
     T_LEFT_BRACKET  shift, and go to state 9
 
     compound_stmt  go to state 12
-    matched_stmt   go to state 114
+    stmt           go to state 106
+    matched_stmt   go to state 14
+    open_stmt      go to state 15
     simple_stmt    go to state 16
 
 
-state 114
+State 78
 
-   12 matched_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt . T_ELSE matched_stmt
+   16 matched_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN . matched_stmt T_ELSE matched_stmt
+   21 open_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN . stmt
+   22          | T_IF T_LEFT_PAREN expr T_RIGHT_PAREN . matched_stmt T_ELSE open_stmt
 
-    T_ELSE  shift, and go to state 115
-
-
-state 115
-
-   12 matched_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE . matched_stmt
-
+    error           shift, and go to state 1
     T_ID            shift, and go to state 2
-    T_IF            shift, and go to state 97
+    T_IF            shift, and go to state 3
     T_WHILE         shift, and go to state 4
     T_PRINT         shift, and go to state 5
     T_READ          shift, and go to state 6
@@ -1870,5 +1324,716 @@ state 115
     T_LEFT_BRACKET  shift, and go to state 9
 
     compound_stmt  go to state 12
+    stmt           go to state 107
+    matched_stmt   go to state 108
+    open_stmt      go to state 15
+    simple_stmt    go to state 16
+
+
+State 79
+
+   20 matched_stmt: T_WHILE error expr T_RIGHT_PAREN . matched_stmt
+
+    error           shift, and go to state 34
+    T_ID            shift, and go to state 2
+    T_IF            shift, and go to state 35
+    T_WHILE         shift, and go to state 4
+    T_PRINT         shift, and go to state 5
+    T_READ          shift, and go to state 6
+    T_INT           shift, and go to state 7
+    T_BOOLEAN       shift, and go to state 8
+    T_LEFT_BRACKET  shift, and go to state 36
+
+    compound_stmt  go to state 12
+    matched_stmt   go to state 109
+    simple_stmt    go to state 16
+
+
+State 80
+
+   19 matched_stmt: T_WHILE T_LEFT_PAREN expr error . matched_stmt
+
+    error           shift, and go to state 34
+    T_ID            shift, and go to state 2
+    T_IF            shift, and go to state 35
+    T_WHILE         shift, and go to state 4
+    T_PRINT         shift, and go to state 5
+    T_READ          shift, and go to state 6
+    T_INT           shift, and go to state 7
+    T_BOOLEAN       shift, and go to state 8
+    T_LEFT_BRACKET  shift, and go to state 36
+
+    compound_stmt  go to state 12
     matched_stmt   go to state 110
+    simple_stmt    go to state 16
+
+
+State 81
+
+   18 matched_stmt: T_WHILE T_LEFT_PAREN expr T_RIGHT_PAREN . matched_stmt
+
+    error           shift, and go to state 34
+    T_ID            shift, and go to state 2
+    T_IF            shift, and go to state 35
+    T_WHILE         shift, and go to state 4
+    T_PRINT         shift, and go to state 5
+    T_READ          shift, and go to state 6
+    T_INT           shift, and go to state 7
+    T_BOOLEAN       shift, and go to state 8
+    T_LEFT_BRACKET  shift, and go to state 36
+
+    compound_stmt  go to state 12
+    matched_stmt   go to state 111
+    simple_stmt    go to state 16
+
+
+State 82
+
+   30 simple_stmt: T_PRINT T_LEFT_PAREN expr error . T_SEMICOLON
+
+    T_SEMICOLON  shift, and go to state 112
+
+
+State 83
+
+   29 simple_stmt: T_PRINT T_LEFT_PAREN expr T_RIGHT_PAREN . T_SEMICOLON
+
+    T_SEMICOLON  shift, and go to state 113
+
+
+State 84
+
+   32 simple_stmt: T_READ T_LEFT_PAREN T_ID T_RIGHT_PAREN . T_SEMICOLON
+
+    T_SEMICOLON  shift, and go to state 114
+
+
+State 85
+
+   27 simple_stmt: T_INT T_ID T_ATRIBUTION error . T_SEMICOLON
+
+    T_SEMICOLON  shift, and go to state 115
+
+
+State 86
+
+   26 simple_stmt: T_INT T_ID T_ATRIBUTION expr . T_SEMICOLON
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+
+    T_EQUAL          shift, and go to state 63
+    T_NOT_EQUAL      shift, and go to state 64
+    T_LESSER_EQUAL   shift, and go to state 65
+    T_GREATER_EQUAL  shift, and go to state 66
+    T_LESSER         shift, and go to state 67
+    T_GREATER        shift, and go to state 68
+    T_AND            shift, and go to state 69
+    T_OR             shift, and go to state 70
+    T_SEMICOLON      shift, and go to state 116
+    T_MINUS          shift, and go to state 72
+    T_SUM            shift, and go to state 73
+    T_DIV            shift, and go to state 74
+    T_MULT           shift, and go to state 75
+
+
+State 87
+
+   28 simple_stmt: T_BOOLEAN T_ID T_ATRIBUTION error . T_SEMICOLON
+
+    T_SEMICOLON  shift, and go to state 117
+
+
+State 88
+
+   25 simple_stmt: T_BOOLEAN T_ID T_ATRIBUTION expr . T_SEMICOLON
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+
+    T_EQUAL          shift, and go to state 63
+    T_NOT_EQUAL      shift, and go to state 64
+    T_LESSER_EQUAL   shift, and go to state 65
+    T_GREATER_EQUAL  shift, and go to state 66
+    T_LESSER         shift, and go to state 67
+    T_GREATER        shift, and go to state 68
+    T_AND            shift, and go to state 69
+    T_OR             shift, and go to state 70
+    T_SEMICOLON      shift, and go to state 118
+    T_MINUS          shift, and go to state 72
+    T_SUM            shift, and go to state 73
+    T_DIV            shift, and go to state 74
+    T_MULT           shift, and go to state 75
+
+
+State 89
+
+    7 compound_stmt: T_LEFT_BRACKET $@2 stmt_list T_RIGHT_BRACKET .
+
+    $default  reduce using rule 7 (compound_stmt)
+
+
+State 90
+
+    9 compound_stmt: T_LEFT_BRACKET $@3 error T_RIGHT_BRACKET .
+
+    $default  reduce using rule 9 (compound_stmt)
+
+
+State 91
+
+   16 matched_stmt: T_IF T_LEFT_PAREN expr . T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+
+    T_EQUAL          shift, and go to state 63
+    T_NOT_EQUAL      shift, and go to state 64
+    T_LESSER_EQUAL   shift, and go to state 65
+    T_GREATER_EQUAL  shift, and go to state 66
+    T_LESSER         shift, and go to state 67
+    T_GREATER        shift, and go to state 68
+    T_AND            shift, and go to state 69
+    T_OR             shift, and go to state 70
+    T_RIGHT_PAREN    shift, and go to state 119
+    T_MINUS          shift, and go to state 72
+    T_SUM            shift, and go to state 73
+    T_DIV            shift, and go to state 74
+    T_MULT           shift, and go to state 75
+
+
+State 92
+
+   48 expr: T_LEFT_PAREN expr T_RIGHT_PAREN .
+
+    $default  reduce using rule 48 (expr)
+
+
+State 93
+
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   41     | expr T_EQUAL expr .
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+
+    T_LESSER_EQUAL   shift, and go to state 65
+    T_GREATER_EQUAL  shift, and go to state 66
+    T_LESSER         shift, and go to state 67
+    T_GREATER        shift, and go to state 68
+    T_MINUS          shift, and go to state 72
+    T_SUM            shift, and go to state 73
+    T_DIV            shift, and go to state 74
+    T_MULT           shift, and go to state 75
+
+    T_EQUAL      error (nonassociative)
+    T_NOT_EQUAL  error (nonassociative)
+
+    $default  reduce using rule 41 (expr)
+
+
+State 94
+
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   42     | expr T_NOT_EQUAL expr .
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+
+    T_LESSER_EQUAL   shift, and go to state 65
+    T_GREATER_EQUAL  shift, and go to state 66
+    T_LESSER         shift, and go to state 67
+    T_GREATER        shift, and go to state 68
+    T_MINUS          shift, and go to state 72
+    T_SUM            shift, and go to state 73
+    T_DIV            shift, and go to state 74
+    T_MULT           shift, and go to state 75
+
+    T_EQUAL      error (nonassociative)
+    T_NOT_EQUAL  error (nonassociative)
+
+    $default  reduce using rule 42 (expr)
+
+
+State 95
+
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   45     | expr T_LESSER_EQUAL expr .
+   46     | expr . T_GREATER_EQUAL expr
+
+    T_MINUS  shift, and go to state 72
+    T_SUM    shift, and go to state 73
+    T_DIV    shift, and go to state 74
+    T_MULT   shift, and go to state 75
+
+    T_LESSER_EQUAL   error (nonassociative)
+    T_GREATER_EQUAL  error (nonassociative)
+    T_LESSER         error (nonassociative)
+    T_GREATER        error (nonassociative)
+
+    $default  reduce using rule 45 (expr)
+
+
+State 96
+
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+   46     | expr T_GREATER_EQUAL expr .
+
+    T_MINUS  shift, and go to state 72
+    T_SUM    shift, and go to state 73
+    T_DIV    shift, and go to state 74
+    T_MULT   shift, and go to state 75
+
+    T_LESSER_EQUAL   error (nonassociative)
+    T_GREATER_EQUAL  error (nonassociative)
+    T_LESSER         error (nonassociative)
+    T_GREATER        error (nonassociative)
+
+    $default  reduce using rule 46 (expr)
+
+
+State 97
+
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   43     | expr T_LESSER expr .
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+
+    T_MINUS  shift, and go to state 72
+    T_SUM    shift, and go to state 73
+    T_DIV    shift, and go to state 74
+    T_MULT   shift, and go to state 75
+
+    T_LESSER_EQUAL   error (nonassociative)
+    T_GREATER_EQUAL  error (nonassociative)
+    T_LESSER         error (nonassociative)
+    T_GREATER        error (nonassociative)
+
+    $default  reduce using rule 43 (expr)
+
+
+State 98
+
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   44     | expr T_GREATER expr .
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+
+    T_MINUS  shift, and go to state 72
+    T_SUM    shift, and go to state 73
+    T_DIV    shift, and go to state 74
+    T_MULT   shift, and go to state 75
+
+    T_LESSER_EQUAL   error (nonassociative)
+    T_GREATER_EQUAL  error (nonassociative)
+    T_LESSER         error (nonassociative)
+    T_GREATER        error (nonassociative)
+
+    $default  reduce using rule 44 (expr)
+
+
+State 99
+
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   38     | expr T_AND expr .
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+
+    T_EQUAL          shift, and go to state 63
+    T_NOT_EQUAL      shift, and go to state 64
+    T_LESSER_EQUAL   shift, and go to state 65
+    T_GREATER_EQUAL  shift, and go to state 66
+    T_LESSER         shift, and go to state 67
+    T_GREATER        shift, and go to state 68
+    T_MINUS          shift, and go to state 72
+    T_SUM            shift, and go to state 73
+    T_DIV            shift, and go to state 74
+    T_MULT           shift, and go to state 75
+
+    $default  reduce using rule 38 (expr)
+
+
+State 100
+
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   39     | expr T_OR expr .
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+
+    T_EQUAL          shift, and go to state 63
+    T_NOT_EQUAL      shift, and go to state 64
+    T_LESSER_EQUAL   shift, and go to state 65
+    T_GREATER_EQUAL  shift, and go to state 66
+    T_LESSER         shift, and go to state 67
+    T_GREATER        shift, and go to state 68
+    T_AND            shift, and go to state 69
+    T_MINUS          shift, and go to state 72
+    T_SUM            shift, and go to state 73
+    T_DIV            shift, and go to state 74
+    T_MULT           shift, and go to state 75
+
+    $default  reduce using rule 39 (expr)
+
+
+State 101
+
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   35     | expr T_MINUS expr .
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+
+    T_DIV   shift, and go to state 74
+    T_MULT  shift, and go to state 75
+
+    $default  reduce using rule 35 (expr)
+
+
+State 102
+
+   34 expr: expr . T_SUM expr
+   34     | expr T_SUM expr .
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+
+    T_DIV   shift, and go to state 74
+    T_MULT  shift, and go to state 75
+
+    $default  reduce using rule 34 (expr)
+
+
+State 103
+
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   37     | expr . T_DIV expr
+   37     | expr T_DIV expr .
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+
+    $default  reduce using rule 37 (expr)
+
+
+State 104
+
+   34 expr: expr . T_SUM expr
+   35     | expr . T_MINUS expr
+   36     | expr . T_MULT expr
+   36     | expr T_MULT expr .
+   37     | expr . T_DIV expr
+   38     | expr . T_AND expr
+   39     | expr . T_OR expr
+   41     | expr . T_EQUAL expr
+   42     | expr . T_NOT_EQUAL expr
+   43     | expr . T_LESSER expr
+   44     | expr . T_GREATER expr
+   45     | expr . T_LESSER_EQUAL expr
+   46     | expr . T_GREATER_EQUAL expr
+
+    $default  reduce using rule 36 (expr)
+
+
+State 105
+
+   24 open_stmt: T_IF error expr T_RIGHT_PAREN stmt .
+
+    $default  reduce using rule 24 (open_stmt)
+
+
+State 106
+
+   23 open_stmt: T_IF T_LEFT_PAREN expr error stmt .
+
+    $default  reduce using rule 23 (open_stmt)
+
+
+State 107
+
+   21 open_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN stmt .
+
+    $default  reduce using rule 21 (open_stmt)
+
+
+State 108
+
+   10 stmt: matched_stmt .
+   16 matched_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt . T_ELSE matched_stmt
+   22 open_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt . T_ELSE open_stmt
+
+    T_ELSE  shift, and go to state 120
+
+    $default  reduce using rule 10 (stmt)
+
+
+State 109
+
+   20 matched_stmt: T_WHILE error expr T_RIGHT_PAREN matched_stmt .
+
+    $default  reduce using rule 20 (matched_stmt)
+
+
+State 110
+
+   19 matched_stmt: T_WHILE T_LEFT_PAREN expr error matched_stmt .
+
+    $default  reduce using rule 19 (matched_stmt)
+
+
+State 111
+
+   18 matched_stmt: T_WHILE T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt .
+
+    $default  reduce using rule 18 (matched_stmt)
+
+
+State 112
+
+   30 simple_stmt: T_PRINT T_LEFT_PAREN expr error T_SEMICOLON .
+
+    $default  reduce using rule 30 (simple_stmt)
+
+
+State 113
+
+   29 simple_stmt: T_PRINT T_LEFT_PAREN expr T_RIGHT_PAREN T_SEMICOLON .
+
+    $default  reduce using rule 29 (simple_stmt)
+
+
+State 114
+
+   32 simple_stmt: T_READ T_LEFT_PAREN T_ID T_RIGHT_PAREN T_SEMICOLON .
+
+    $default  reduce using rule 32 (simple_stmt)
+
+
+State 115
+
+   27 simple_stmt: T_INT T_ID T_ATRIBUTION error T_SEMICOLON .
+
+    $default  reduce using rule 27 (simple_stmt)
+
+
+State 116
+
+   26 simple_stmt: T_INT T_ID T_ATRIBUTION expr T_SEMICOLON .
+
+    $default  reduce using rule 26 (simple_stmt)
+
+
+State 117
+
+   28 simple_stmt: T_BOOLEAN T_ID T_ATRIBUTION error T_SEMICOLON .
+
+    $default  reduce using rule 28 (simple_stmt)
+
+
+State 118
+
+   25 simple_stmt: T_BOOLEAN T_ID T_ATRIBUTION expr T_SEMICOLON .
+
+    $default  reduce using rule 25 (simple_stmt)
+
+
+State 119
+
+   16 matched_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN . matched_stmt T_ELSE matched_stmt
+
+    error           shift, and go to state 34
+    T_ID            shift, and go to state 2
+    T_IF            shift, and go to state 35
+    T_WHILE         shift, and go to state 4
+    T_PRINT         shift, and go to state 5
+    T_READ          shift, and go to state 6
+    T_INT           shift, and go to state 7
+    T_BOOLEAN       shift, and go to state 8
+    T_LEFT_BRACKET  shift, and go to state 36
+
+    compound_stmt  go to state 12
+    matched_stmt   go to state 121
+    simple_stmt    go to state 16
+
+
+State 120
+
+   16 matched_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE . matched_stmt
+   22 open_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE . open_stmt
+
+    error           shift, and go to state 34
+    T_ID            shift, and go to state 2
+    T_IF            shift, and go to state 3
+    T_WHILE         shift, and go to state 4
+    T_PRINT         shift, and go to state 5
+    T_READ          shift, and go to state 6
+    T_INT           shift, and go to state 7
+    T_BOOLEAN       shift, and go to state 8
+    T_LEFT_BRACKET  shift, and go to state 36
+
+    compound_stmt  go to state 12
+    matched_stmt   go to state 122
+    open_stmt      go to state 123
+    simple_stmt    go to state 16
+
+
+State 121
+
+   16 matched_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt . T_ELSE matched_stmt
+
+    T_ELSE  shift, and go to state 124
+
+
+State 122
+
+   16 matched_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt .
+
+    $default  reduce using rule 16 (matched_stmt)
+
+
+State 123
+
+   22 open_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE open_stmt .
+
+    $default  reduce using rule 22 (open_stmt)
+
+
+State 124
+
+   16 matched_stmt: T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE . matched_stmt
+
+    error           shift, and go to state 34
+    T_ID            shift, and go to state 2
+    T_IF            shift, and go to state 35
+    T_WHILE         shift, and go to state 4
+    T_PRINT         shift, and go to state 5
+    T_READ          shift, and go to state 6
+    T_INT           shift, and go to state 7
+    T_BOOLEAN       shift, and go to state 8
+    T_LEFT_BRACKET  shift, and go to state 36
+
+    compound_stmt  go to state 12
+    matched_stmt   go to state 122
     simple_stmt    go to state 16

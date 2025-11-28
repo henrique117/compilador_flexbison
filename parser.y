@@ -56,8 +56,8 @@
 %union {
     char* text;
     int val;
-    Tipo sem_type;          // Tipo semântico (TIPO_INT, TIPO_BOOL)
-    SymbolEntry *sym_ptr;   // Ponteiro para a entrada da TS (para IDs ou expressões resolvidas)
+    int sem_type;          // Tipo semantico (TIPO_INT, TIPO_BOOL)
+    struct SymbolEntry *sym_ptr;   // Ponteiro para a entrada da TS (para IDs ou expressões resolvidas)
 }
 
 %token <text> T_ID T_NUMBER
@@ -87,8 +87,8 @@
 %left T_MULT T_DIV
 %right T_NOT UMINUS
 
-%nonassoc IFX  /* Define a precedência para 'if' sem 'else' */
-%nonassoc T_ELSE /* Define a precedência para 'else' */
+//%nonassoc IFX  /* Define a precedência para 'if' sem 'else' */
+//%nonassoc T_ELSE /* Define a precedência para 'else' */
 
 %%
 /* ----------------------------------------------------
@@ -106,15 +106,21 @@ stmt_list:
     | stmt_list stmt
     ;
 
+optional_stmt_list:
+    
+    | stmt_list 
+    ;
+
 compound_stmt:
-    T_LEFT_BRACKET  { push_scope(); } T_RIGHT_BRACKET { pop_scope(); }
+    T_LEFT_BRACKET { push_scope(); } optional_stmt_list T_RIGHT_BRACKET { pop_scope(); }
+    /*T_LEFT_BRACKET  { push_scope(); } T_RIGHT_BRACKET { pop_scope(); }
     |
     T_LEFT_BRACKET { push_scope(); } stmt_list T_RIGHT_BRACKET { pop_scope(); }
     | T_LEFT_BRACKET { push_scope(); } error T_RIGHT_BRACKET {
         yyerror("-> Erro de sintaxe dentro do bloco '{ }'\n");
         yyerrok;
         pop_scope(); // Garante o fechamento do escopo mesmo no erro
-    }
+    }*/
     ;
 
 stmt:
@@ -124,21 +130,29 @@ stmt:
         yyerror("-> Expressao ou atribuicao mal formada\n");
         yyerrok;
     }
-    | T_LEFT_BRACKET stmt_list error {
+    /*| T_LEFT_BRACKET stmt_list error {
         yyerror("-> Detectado '}' ausente\n");
         yyerrok;
-    }
+    }*/
     ;
 
 matched_stmt:
     simple_stmt
     | compound_stmt
-    | T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt
+    | T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE matched_stmt {
+        if ($3 != TIPO_BOOL && $3 != TIPO_UNDEFINED){
+            yysemanticerror("A condicao do IF deve ser do tipo booleano.", line, column);
+        }
+    }
     | error T_ELSE matched_stmt {
         yyerror("-> 'else' sem 'if' previamente\n");
         yyerrok;
     }
-    | T_WHILE T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt
+    | T_WHILE T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt{
+        if ($3 != TIPO_BOOL && $3 != TIPO_UNDEFINED){
+            yysemanticerror("A condicao do WHILE deve ser do tipo booleano.", line, column);
+        }
+    }
     | T_WHILE T_LEFT_PAREN expr error matched_stmt {
         yyerror("-> Detectado ')' ausente na formacao de 'while'\n");
         yyerrok;
@@ -150,8 +164,16 @@ matched_stmt:
     ;
 
 open_stmt:
-    T_IF T_LEFT_PAREN expr T_RIGHT_PAREN stmt
-    | T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE open_stmt
+    T_IF T_LEFT_PAREN expr T_RIGHT_PAREN stmt {
+        if ($3 != TIPO_BOOL && $3 != TIPO_UNDEFINED){
+            yysemanticerror("A condicao do IF deve ser do tipo booleano.", line, column);
+        }
+    }
+    | T_IF T_LEFT_PAREN expr T_RIGHT_PAREN matched_stmt T_ELSE open_stmt{
+        if ($3 != TIPO_BOOL && $3 != TIPO_UNDEFINED){
+            yysemanticerror("A condicao do IF deve ser do tipo booleano.", line, column);
+        }
+    }
     | T_IF T_LEFT_PAREN expr error stmt {
         yyerror("-> Detectado ')' ausente no 'if'\n");
         yyerrok;
@@ -164,19 +186,19 @@ open_stmt:
 
 simple_stmt:
     T_BOOLEAN T_ID T_ATRIBUTION expr T_SEMICOLON {
-        // ID: $2.text, Tipo: TIPO_BOOL
-        if (check_redeclaration($2.text)) {
+        // ID: $2, Tipo: TIPO_BOOL
+        if (check_redeclaration($2)) {
             yysemanticerror("Identificador re-declarado no escopo atual.", line, column);
         } else {
-            insert_symbol($2.text, TIPO_BOOL);
+            insert_symbol($2, TIPO_BOOL);
         }
     }
     | T_INT T_ID T_ATRIBUTION expr T_SEMICOLON {
-        // ID: $2.text, Tipo: TIPO_INT
-        if (check_redeclaration($2.text)) {
+        // ID: $2, Tipo: TIPO_INT
+        if (check_redeclaration($2)) {
             yysemanticerror("Identificador re-declarado no escopo atual.", line, column);
         } else {
-            insert_symbol($2.text, TIPO_INT);
+            insert_symbol($2, TIPO_INT);
         }
     }
     | T_INT T_ID T_ATRIBUTION error T_SEMICOLON {
@@ -192,36 +214,157 @@ simple_stmt:
         yyerror("-> Detectado ')' ausente no 'print'\n");
         yyerrok;
     }
-    | T_ID T_ATRIBUTION expr T_SEMICOLON
-    | T_READ T_LEFT_PAREN T_ID T_RIGHT_PAREN T_SEMICOLON
+    | T_ID T_ATRIBUTION expr T_SEMICOLON {
+        SymbolEntry *entry = lookup_symbol($1);
+        if (entry == NULL) {
+            yysemanticerror("Identificador nao declarado.", line, column);
+        } else {
+            if (entry->tipo != $3 && $3 != TIPO_UNDEFINED) {
+                yysemanticerror("Tipo incompativel para atribuicao.", line, column);
+            }
+        }
+    }
+    | T_READ T_LEFT_PAREN T_ID T_RIGHT_PAREN T_SEMICOLON{
+        if(lookup_symbol ($3) == NULL){
+            yysemanticerror("Identificador nao declarado no comando READ.", line, column);
+        
+        }
+    }
     ;
 
 /* ----------------- EXPRESSÕES ----------------- */
 expr:
-    primary_expr
+    primary_expr { $$ = $1; } // Passa o tipo para cima
     /* Aritméticos */
-    | expr T_SUM expr
-    | expr T_MINUS expr
-    | expr T_MULT expr
-    | expr T_DIV expr
+    | expr T_SUM expr {
+        if ($1 == TIPO_INT && $3 == TIPO_INT) { $$ = TIPO_INT;}
+        else {
+            if ($1 != TIPO_UNDEFINED && $3 != TIPO_UNDEFINED)
+                yysemanticerror("Operacao de SOMA requer dois inteiros.", line, column);
+            $$ = TIPO_UNDEFINED;
+        }
+    }
+    | expr T_MINUS expr {
+        if ($1 == TIPO_INT && $3 == TIPO_INT) { $$ = TIPO_INT;}
+        else {
+            if ($1 != TIPO_UNDEFINED && $3 != TIPO_UNDEFINED)
+                yysemanticerror("Operacao de SUBTRACAO requer dois inteiros.", line, column);
+            $$ = TIPO_UNDEFINED;
+        }
+    }
+    | expr T_MULT expr {
+        if ($1 == TIPO_INT && $3 == TIPO_INT) { $$ = TIPO_INT;}
+        else {
+            if ($1 != TIPO_UNDEFINED && $3 != TIPO_UNDEFINED)
+                yysemanticerror("Operacao de MULTIPLICACAO requer dois inteiros.", line, column);
+            $$ = TIPO_UNDEFINED;
+        }
+    }
+    | expr T_DIV expr {
+        if ($1 == TIPO_INT && $3 == TIPO_INT) { $$ = TIPO_INT;}
+        else {
+            if ($1 != TIPO_UNDEFINED && $3 != TIPO_UNDEFINED)
+                yysemanticerror("Operacao de DIVISAO requer dois inteiros.", line, column);
+            $$ = TIPO_UNDEFINED;
+        }
+    }
     /* Logicos */
-    | expr T_AND expr
-    | expr T_OR expr
+    | expr T_AND expr {
+        if ($1 == TIPO_BOOL && $3 == TIPO_BOOL) { $$ = TIPO_BOOL;}
+        else {
+            if ($1 != TIPO_BOOL && $3 != TIPO_UNDEFINED)
+                yysemanticerror("Operacao AND requer dois booleanos.", line, column);
+            $$ = TIPO_UNDEFINED;
+        }
+    }
+    | expr T_OR expr {
+        if ($1 == TIPO_BOOL && $3 == TIPO_BOOL) { $$ = TIPO_BOOL;}
+        else {
+            if ($1 != TIPO_BOOL && $3 != TIPO_UNDEFINED)
+                yysemanticerror("Operacao OR requer dois booleanos.", line, column);
+            $$ = TIPO_UNDEFINED;
+        }
+    }
     | T_NOT expr {
         // Propaga o valor semântico (tipo) da expressão interna ($2)
-        $$ = $2; 
+        if ($2 == TIPO_BOOL) { $$ = TIPO_BOOL;}
+        else {
+            if ($2 != TIPO_UNDEFINED)
+                yysemanticerror("Operacao NOT requer um booleano.", line, column);
+            $$ = TIPO_UNDEFINED;
+        }
     }
     /* Relacionais */
-    | expr T_EQUAL expr
-    | expr T_NOT_EQUAL expr
-    | expr T_LESSER expr
-    | expr T_GREATER expr
-    | expr T_LESSER_EQUAL expr
-    | expr T_GREATER_EQUAL expr
+    | expr T_EQUAL expr {
+        if ($1 == $3) {
+            if ($1 != TIPO_UNDEFINED) {
+                $$ = TIPO_BOOL;
+            } else {
+                $$ = TIPO_UNDEFINED; 
+            }
+        } 
+        else {
+            if ($1 != TIPO_UNDEFINED && $3 != TIPO_UNDEFINED)
+                yysemanticerror("Tipos incompativeis para comparacao (==).", line, column);
+            $$ = TIPO_UNDEFINED;
+        }
+    }
+    | expr T_NOT_EQUAL expr {
+        if ($1 == $3) {
+            if ($1 != TIPO_UNDEFINED) {
+                $$ = TIPO_BOOL;
+            } else {
+                $$ = TIPO_UNDEFINED;
+            }
+        } 
+        else {
+            if ($1 != TIPO_UNDEFINED && $3 != TIPO_UNDEFINED)
+                yysemanticerror("Tipos incompativeis para comparacao (!=).", line, column);
+            $$ = TIPO_UNDEFINED;
+        }
+    }
+    
+    | expr T_LESSER expr {
+        if ($1 == TIPO_INT && $3 == TIPO_INT) { $$ = TIPO_BOOL;}
+        else {
+            if ($1 != TIPO_UNDEFINED && $3 != TIPO_UNDEFINED)
+                yysemanticerror("Comparacao (<) requer dois inteiros.", line, column);
+                $$ = TIPO_UNDEFINED;
+        }
+    }
+    | expr T_GREATER expr {
+        if ($1 == TIPO_INT && $3 == TIPO_INT) { $$ = TIPO_BOOL;}
+        else {
+            if ($1 != TIPO_UNDEFINED && $3 != TIPO_UNDEFINED)
+                yysemanticerror("Comparacao (>) requer dois inteiros.", line, column);
+            $$ = TIPO_UNDEFINED;
+        }
+    }
+    | expr T_LESSER_EQUAL expr {
+        if ($1 == TIPO_INT && $3 == TIPO_INT) { $$ = TIPO_BOOL;}
+        else {
+            if ($1 == TIPO_UNDEFINED && $3 == TIPO_UNDEFINED)
+                yysemanticerror("Comparacao (<=) requer dois inteiros.", line, column);
+            $$ = TIPO_UNDEFINED;
+        }
+    }
+    | expr T_GREATER_EQUAL expr {
+        if ($1 == TIPO_INT && $3 == TIPO_INT) { $$ = TIPO_BOOL;}
+        else {
+            if ($1 != TIPO_UNDEFINED && $3 != TIPO_UNDEFINED)
+                yysemanticerror("Comparacao (>=) requer dois inteiros.", line, column);
+            $$ = TIPO_UNDEFINED;
+        }
+    }
     /* Unario */
     | T_MINUS expr %prec UMINUS {
         // Propaga o valor semântico (tipo) da expressão interna ($2)
-        $$ = $2; 
+        if ($2 == TIPO_INT) { $$ = TIPO_INT;}
+        else {
+            if ($2 != TIPO_UNDEFINED)
+                yysemanticerror("Operacao unario requer um inteiro.", line, column);
+            $$ = TIPO_UNDEFINED;
+        }
     }
     /* Parenteses */
     | T_LEFT_PAREN expr T_RIGHT_PAREN {
@@ -232,29 +375,29 @@ expr:
 primary_expr : 
     T_NUMBER {
         // Um número literal sempre tem o tipo INT
-        $$.sem_type = TIPO_INT; 
+        $$ = TIPO_INT; 
     }
     | T_ID {
-        SymbolEntry *entry = lookup_symbol($1.text);
+        SymbolEntry *entry = lookup_symbol($1);
         
         if (entry == NULL) {
             // ERRO SEMÂNTICO: Identificador em uso não foi declarado.
-            yysemanticerror("Identificador não declarado (uso indevido).", line, column);
+            yysemanticerror("Identificador nao declarado (uso indevido).", line, column);
             
             // Para permitir que o Type Checker continue, definimos um tipo indefinido
-            $$.sem_type = TIPO_UNDEFINED;
+            $$ = TIPO_UNDEFINED;
         } else {
             // ID encontrado: armazenamos o tipo da variável para uso no Type Checking
-            $$.sem_type = entry->tipo;
+            $$ = entry->tipo;
         }
     }
     | T_TRUE {
         // 'true' é um literal booleano
-        $$.sem_type = TIPO_BOOL;
+        $$ = TIPO_BOOL;
     }
     | T_FALSE {
         // 'false' é um literal booleano
-        $$.sem_type = TIPO_BOOL;
+        $$ = TIPO_BOOL;
     }
     ;
 
@@ -264,7 +407,7 @@ primary_expr :
  * ---------------------------------------------------- */
 
 void yysemanticerror(const char *msg, int line, int column) {
-    fprintf(stderr, "Erro Semântico na Linha %d, Coluna %d: %s\n", line, column, msg);
+    fprintf(stderr, "Erro Semantico na Linha %d, Coluna %d: %s\n", line, column, msg);
 }
 
 const char* tipo_to_string(Tipo tipo) {
@@ -284,7 +427,7 @@ void init_table() {
 void push_scope() {
     Scope *new_scope = (Scope *)malloc(sizeof(Scope));
     if (!new_scope) {
-        yysemanticerror("Erro interno: Memória insuficiente para novo escopo.", line, column);
+        yysemanticerror("Erro interno: Memoria insuficiente para novo escopo.", line, column);
         exit(1);
     }
     scope_counter++;
@@ -336,7 +479,7 @@ SymbolEntry* insert_symbol(const char *id, Tipo tipo) {
 
     SymbolEntry *new_entry = (SymbolEntry *)malloc(sizeof(SymbolEntry));
     if (!new_entry) {
-        yysemanticerror("Erro interno: Memória insuficiente para nova entrada de símbolo.", line, column);
+        yysemanticerror("Erro interno: Memoria insuficiente para nova entrada de simbolo.", line, column);
         exit(1);
     }
 
@@ -374,17 +517,17 @@ void show_ts_recursive(Scope *scope) {
     
     show_ts_recursive(scope->prev); 
 
-    printf("--- Escopo Nível %d ---\n", scope->level);
+    printf("--- Escopo Nivel %d ---\n", scope->level);
     SymbolEntry *current = scope->head;
     int count = 1;
     while (current) {
-        printf("%d. ID: %s | Tipo: %s | Nível: %d\n", count++, current->id, tipo_to_string(current->tipo), current->escopo_level);
+        printf("%d. ID: %s | Tipo: %s | Nivel: %d\n", count++, current->id, tipo_to_string(current->tipo), current->escopo_level);
         current = current->next;
     }
 }
 
 void show_ts() {
-    printf("\n\n=============== Tabela de Símbolos Completa ==============\n");
+    printf("\n\n=============== Tabela de Simbolos Completa ==============\n");
     // Iniciamos a impressão a partir do escopo atual
     show_ts_recursive(current_scope);
     printf("==========================================================\n");
@@ -410,7 +553,7 @@ int main(int argc, char *argv[]) {
 
     yyparse(); /* Inicia a analise */
 
-    printf("\n========================================\n");
+    printf("\n========================================\n"); 
     printf("Analise sintatica concluida com sucesso!\n");
     printf("========================================\n");
 

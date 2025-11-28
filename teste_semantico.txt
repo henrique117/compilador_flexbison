@@ -1,0 +1,56 @@
+/*
+    /* Declarações com inicialização (obrigatório na sua gramática) */
+    int x = 10;
+    int y = 20;
+    bool ativo = true;
+    bool teste = false;
+
+    /* Teste de Aritmética (int op int) */
+    x = x + y * 2;
+    x = (y - 5) / 5;
+
+    /* Teste de Lógica e Relacional */
+    /* (int > int) resulta em bool */
+    teste = x > y; 
+    
+    /* (bool && bool) resulta em bool */
+    ativo = teste && true;
+
+    /* Teste de Comandos */
+    if (ativo) {
+        print(x);
+    } else {
+        print(y);
+    }
+
+    while (x > 0) {
+        x = x - 1;
+    }
+*/
+
+
+    int numero = 10;
+    bool flag = true;
+
+    /* ERRO 1: Variável não declarada */
+    k = 50;
+
+    /* ERRO 2: Atribuição incompatível (int recebendo bool) */
+    numero = true;
+
+    /* ERRO 3: Atribuição incompatível (bool recebendo int) */
+    flag = 100;
+
+    /* ERRO 4: Aritmética inválida (soma de bool) */
+    numero = 10 + flag;
+
+    /* ERRO 5: Lógica inválida (AND com int) */
+    flag = true && 10;
+
+    /* ERRO 6: Condição do IF não é bool (é int) */
+    if (10 + 5) {
+        print(numero);
+    }
+
+    /* ERRO 7: Comparação Relacional inválida (bool > int) */
+    flag = flag > numero;
