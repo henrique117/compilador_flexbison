@@ -8,6 +8,7 @@
     #include <string.h>
     #include <stdbool.h>
 
+    // Declarações externas vindas do Lexer (scanner.l)
     extern FILE *yyin;
     extern int line;
     extern int column;
@@ -16,43 +17,55 @@
     void yyerror(char *s);
 %}
 
-/* Tipos visíveis no .h e no .c */
+/* * Bloco %code requires: 
+ * Define estruturas que precisam ser visíveis tanto no .c quanto no header .h
+ * Isso evita erros de "unknown type" no compilador.
+ */
 %code requires {
+    // Enum para verificação de tipos (Semântica)
     typedef enum { TIPO_INT, TIPO_BOOL, TIPO_UNDEFINED } Tipo;
 
+    // Estrutura que carrega dados de baixo para cima na árvore sintática
     typedef struct {
-        Tipo type;      
-        char *addr;     
+        Tipo type;      // O tipo da expressão (int ou bool)
+        char *addr;     // O "endereço" (nome da variável ou temporário t1, t2...)
     } Attributes;
 
+    // Nó da Tabela de Símbolos (Lista Ligada)
     typedef struct SymbolEntry {
-        char *id;
-        Tipo tipo; 
-        int escopo_level;
+        char *id;       // Nome do identificador
+        Tipo tipo;      // Tipo declarado
+        int escopo_level; // Nível do escopo (0=global, 1=local...)
         struct SymbolEntry *next;
     } SymbolEntry;
 
+    // Estrutura de Escopo (Pilha de Tabelas de Símbolos)
     typedef struct Scope {
         int level;
-        SymbolEntry *head;
-        struct Scope *prev;
+        SymbolEntry *head; // Lista de símbolos deste escopo
+        struct Scope *prev; // Ponteiro para o escopo pai (anterior)
     } Scope;
 }
 
-/* Variáveis Globais e Protótipos */
+/* * Bloco %code: 
+ * Variáveis globais e protótipos de funções auxiliares usadas nas regras.
+ */
 %code {
-    FILE *arquivo_saida = NULL; 
+    FILE *arquivo_saida = NULL; // Ponteiro para o arquivo .ir gerado
 
-    Scope *current_scope = NULL;
-    int scope_counter = 0;
+    Scope *current_scope = NULL; // Aponta para o escopo atual (topo da pilha)
+    int scope_counter = 0;       // Contador para numerar escopos
     
+    // Contadores para gerar nomes únicos (t1, t2... L1, L2...)
     static int temp_count = 0;
     static int label_count = 0;
     
+    // Pilha auxiliar para guardar Labels de IF/WHILE aninhados
     #define MAX_STACK 100
     char* label_stack[MAX_STACK];
     int stack_top = 0;
 
+    // Protótipos (Implementações no final do arquivo)
     void push_label(char* l);
     char* pop_label(void);
     char* newTemp(void);
@@ -74,15 +87,17 @@
 /* ----------------------------------------------------
  * 2. UNION E TOKENS
  * ---------------------------------------------------- */
+/* A Union define os tipos de dados que os tokens e regras podem retornar ($$) */
 %union {
-    char* text;
+    char* text;     // Para tokens como ID e NUMBER (texto puro)
     int val;
-    Attributes info;       
+    Attributes info;// Para expressões (carrega tipo + endereço TAC)
     struct SymbolEntry *sym_ptr;
 }
 
+// Definição dos tokens e seus tipos na Union
 %token <text> T_ID T_NUMBER
-%type <info> expr primary_expr
+%type <info> expr primary_expr // Expressões retornam a struct Attributes
 
 %token T_IF T_ELSE T_WHILE T_PRINT T_READ
 %token T_TRUE T_FALSE
@@ -93,12 +108,10 @@
 %token T_ATRIBUTION
 %token T_LEFT_PAREN T_RIGHT_PAREN T_LEFT_BRACKET T_RIGHT_BRACKET
 %token T_SEMICOLON T_COMMA
-%token T_MOD
 
-/* --- PRECEDÊNCIA CORRIGIDA --- */
-/* A ordem importa: IFX tem prioridade menor que ELSE */
-%nonassoc IFX
-%nonassoc T_ELSE
+/* Precedência para resolver conflitos (ex: Dangling Else) */
+%nonassoc IFX       // Prioridade menor
+%nonassoc T_ELSE    // Prioridade maior (força empilhar o else)
 
 %left T_OR
 %left T_AND
@@ -129,13 +142,17 @@ optional_stmt_list:
     stmt_list 
     ;
 
+/* Bloco de código { ... }: Cria novo escopo ao entrar, remove ao sair */
 compound_stmt:
     T_LEFT_BRACKET { push_scope(); } optional_stmt_list T_RIGHT_BRACKET { pop_scope(); }
     ;
 
-/* --- AUXILIARES PARA EVITAR CONFLITOS E ARRIMAR A GERAÇÃO DE CÓDIGO --- */
+/* --- REGRAS AUXILIARES PARA GERAÇÃO DE CÓDIGO (FIX PARA CONFLITOS) --- */
 
-/* 1. Cabeçalho do IF: Processa a condição, gera o pulo para o Falso */
+/* * if_head: Regra que processa o início do IF.
+ * Ação: Verifica se a condição é booleana, gera Label falso e emite IF_FALSE.
+ * Retorna o fluxo já preparado para o bloco 'then'.
+ */
 if_head:
     T_IF T_LEFT_PAREN expr T_RIGHT_PAREN 
     {
@@ -144,11 +161,11 @@ if_head:
         }
         char *L_false = newLabel();
         emit("IF_FALSE", $3.addr, NULL, L_false);
-        push_label(L_false); // Empilha para usar no fim do bloco ou no else
+        push_label(L_false); // Guarda o destino do salto condicional
     }
     ;
 
-/* 2. Inicio do While: Marca o Label de retorno */
+/* while_start: Marca o início do loop para poder voltar com GOTO depois */
 while_start:
     T_WHILE 
     {
@@ -158,7 +175,7 @@ while_start:
     }
     ;
 
-/* 3. Condição do While: Testa e pula pro fim se falso */
+/* while_cond: Avalia a condição de parada do loop */
 while_cond:
     T_LEFT_PAREN expr T_RIGHT_PAREN 
     {
@@ -166,7 +183,7 @@ while_cond:
             yysemanticerror("A condicao do WHILE deve ser do tipo booleano.", line, column);
         }
         char *L_end = newLabel();
-        emit("IF_FALSE", $2.addr, NULL, L_end);
+        emit("IF_FALSE", $2.addr, NULL, L_end); // Se falso, pula para o fim
         push_label(L_end);
     }
     ;
@@ -177,56 +194,58 @@ stmt:
     simple_stmt
     | compound_stmt
     
-    /* Estrutura IF SEM ELSE */
+    /* IF sem ELSE: Usa precedência IFX para resolver conflito */
     | if_head stmt %prec IFX 
       {
           char *L_false = pop_label();
-          emitLabel(L_false);
+          emitLabel(L_false); // Define o alvo do salto caso a condição falhe
       }
       
-    /* Estrutura IF COM ELSE */
+    /* IF com ELSE */
     | if_head stmt T_ELSE 
       {
-          /* Chegamos ao fim do 'then', precisamos pular o 'else' */
-          char *L_false = pop_label(); // O label que marcava o início do else
-          char *L_end = newLabel();    // Novo label para o fim total
+          /* Terminamos o bloco THEN. Precisamos pular o ELSE. */
+          char *L_false = pop_label(); // Recupera label do IF_FALSE
+          char *L_end = newLabel();    // Cria label para o fim total
           
           emit("GOTO", NULL, NULL, L_end); // Pula o else
-          emitLabel(L_false);              // Começa o else
-          push_label(L_end);               // Guarda o fim total
+          emitLabel(L_false);              // Marca início do else
+          push_label(L_end);               // Guarda o fim para depois do stmt do else
       }
       stmt 
       {
           char *L_end = pop_label();
-          emitLabel(L_end);
+          emitLabel(L_end); // Marca o fim total da estrutura
       }
 
-    /* Estrutura WHILE */
+    /* WHILE */
     | while_start while_cond stmt 
       {
           char *L_end = pop_label();
           char *L_start = pop_label();
-          emit("GOTO", NULL, NULL, L_start); // Volta para testar
-          emitLabel(L_end);                  // Sai do loop
+          emit("GOTO", NULL, NULL, L_start); // Volta para o início (loop)
+          emitLabel(L_end);                  // Marca a saída
       }
 
-    /* Tratamento de Erros de Sintaxe */
+    /* Recuperação de Erro Simples (Pânico) */
     | error T_SEMICOLON {
         yyerror("-> Erro: Ponto e virgula inesperado ou comando mal formado\n");
         yyerrok;
     }
     ;
 
-
+/* Comandos Simples (Atribuição, Print, Read) */
 simple_stmt:
+    /* Declaração e Atribuição de Booleano */
     T_BOOLEAN T_ID T_ATRIBUTION expr T_SEMICOLON {
         if (check_redeclaration($2)) {
             yysemanticerror("Identificador re-declarado no escopo atual.", line, column);
         } else {
-            insert_symbol($2, TIPO_BOOL);
-            emit("ASSIGN", $4.addr, NULL, $2);
+            insert_symbol($2, TIPO_BOOL); // Insere na tabela
+            emit("ASSIGN", $4.addr, NULL, $2); // Gera código: ASSIGN temp, id
         }
     }
+    /* Declaração e Atribuição de Inteiro */
     | T_INT T_ID T_ATRIBUTION expr T_SEMICOLON {
         if (check_redeclaration($2)) {
             yysemanticerror("Identificador re-declarado no escopo atual.", line, column);
@@ -235,6 +254,7 @@ simple_stmt:
             emit("ASSIGN", $4.addr, NULL, $2);
       }
     }
+    /* Tratamento de erros de atribuição inválida */
     | T_INT T_ID T_ATRIBUTION error T_SEMICOLON {
         yyerror("-> Atribuicao invalida para int\n");
         yyerrok;
@@ -243,27 +263,31 @@ simple_stmt:
         yyerror("-> Atribuicao invalida para boolean\n");
         yyerrok;
     }
-    |
-    T_PRINT T_LEFT_PAREN expr T_RIGHT_PAREN T_SEMICOLON {
+    /* Comando PRINT */
+    | T_PRINT T_LEFT_PAREN expr T_RIGHT_PAREN T_SEMICOLON {
+        // Gera código: PRINT valor
         emit("PRINT", NULL, NULL, $3.addr);
     }
+    /* Erro no PRINT */
     | T_PRINT T_LEFT_PAREN expr error T_SEMICOLON {
         yyerror("-> Detectado ')' ausente no 'print'\n");
         yyerrok;
     }
+    /* Atribuição Simples (variável já existente) */
     | T_ID T_ATRIBUTION expr T_SEMICOLON {
-        SymbolEntry *entry = lookup_symbol($1);
+        SymbolEntry *entry = lookup_symbol($1); // Busca na tabela
         if (entry == NULL) {
             yysemanticerror("Identificador nao declarado.", line, column);
         } else {
+            // Checagem de Tipos
             if (entry->tipo != $3.type && $3.type != TIPO_UNDEFINED) {
                 yysemanticerror("Tipo incompativel para atribuicao.", line, column);
             }
             emit("ASSIGN", $3.addr, NULL, $1);
         }
     }
-    |
-    T_READ T_LEFT_PAREN T_ID T_RIGHT_PAREN T_SEMICOLON{
+    /* Comando READ */
+    | T_READ T_LEFT_PAREN T_ID T_RIGHT_PAREN T_SEMICOLON{
         if(lookup_symbol ($3) == NULL){
             yysemanticerror("Identificador nao declarado no comando READ.", line, column);
         }
@@ -272,14 +296,21 @@ simple_stmt:
     ;
 
 /* ----------------- EXPRESSÕES ----------------- */
+/* * Regras de expressão matemática e lógica.
+ * Ação Padrão: 
+ * 1. Verifica compatibilidade de tipos.
+ * 2. Gera novo temporário (newTemp).
+ * 3. Emite a instrução (ADD, SUB, etc).
+ * 4. Sobe o tipo e o endereço (t1) para a regra pai ($$).
+ */
 expr:
     primary_expr { $$ = $1; } 
     |
     expr T_SUM expr {
         if ($1.type == TIPO_INT && $3.type == TIPO_INT) { 
             $$.type = TIPO_INT;
-            $$.addr = newTemp();
-            emit("ADD", $1.addr, $3.addr, $$.addr);
+            $$.addr = newTemp(); // Cria tX
+            emit("ADD", $1.addr, $3.addr, $$.addr); // ADD t1, t2, tX
         }
         else {
             if ($1.type != TIPO_UNDEFINED && $3.type != TIPO_UNDEFINED)
@@ -477,7 +508,7 @@ expr:
 primary_expr : 
     T_NUMBER {
         $$.type = TIPO_INT;
-        $$.addr = $1; 
+        $$.addr = $1; // O endereço é o próprio número literal
     }
     | T_ID {
         SymbolEntry *entry = lookup_symbol($1);
@@ -486,7 +517,7 @@ primary_expr :
             $$.type = TIPO_UNDEFINED;
         } else {
             $$.type = entry->tipo;
-            $$.addr = $1;
+            $$.addr = $1; // O endereço é o nome da variável
         }
     }
     | T_TRUE {
@@ -504,6 +535,7 @@ primary_expr :
  * 4. IMPLEMENTAÇÃO DAS FUNÇÕES (EPILOGO)
  * ---------------------------------------------------- */
 
+// Gerenciamento de Pilha de Labels (para aninhamento de if/while)
 void push_label(char* l) {
     if (stack_top < MAX_STACK) label_stack[stack_top++] = l;
 }
@@ -513,18 +545,22 @@ char* pop_label() {
     return NULL;
 }
 
+// Cria novo temporário: t0, t1, t2...
 char* newTemp() {
     char* buffer = (char*)malloc(20);
     sprintf(buffer, "t%d", temp_count++);
     return buffer;
 }
 
+// Cria novo rótulo: L0, L1, L2...
 char* newLabel() {
     char* buffer = (char*)malloc(20);
     sprintf(buffer, "L%d", label_count++);
     return buffer;
 }
 
+// Função Principal de Emissão: Escreve no arquivo ou na tela
+// Formato: OP arg1, arg2, dest
 void emit(char *op, char *arg1, char *arg2, char *dest) {
     if (!arquivo_saida) arquivo_saida = stdout; 
 
@@ -534,26 +570,31 @@ void emit(char *op, char *arg1, char *arg2, char *dest) {
     else                      fprintf(arquivo_saida, "\t%s\n", op);
 }
 
+// Emite um rótulo (ex: "L1:")
 void emitLabel(char *label) {
     if (!arquivo_saida) arquivo_saida = stdout;
     fprintf(arquivo_saida, "%s:\n", label);
 }
 
+// Reporta erro semântico com linha e coluna
 void yysemanticerror(const char *msg, int line, int column) {
     fprintf(stderr, "Erro Semantico na Linha %d, Coluna %d: %s\n", line, column, msg);
 }
 
+// Helper para converter enum Tipo em string (debug)
 const char* tipo_to_string(Tipo tipo) {
     if (tipo == TIPO_INT) return "int";
     if (tipo == TIPO_BOOL) return "bool";
     return "indefinido";
 }
 
+// Inicializa a tabela de símbolos (cria escopo global)
 void init_table() {
     scope_counter = 0;
     push_scope(); 
 }
 
+// Cria novo escopo e o coloca no topo da pilha (ex: entrar em função ou bloco)
 void push_scope() {
     Scope *new_scope = (Scope *)malloc(sizeof(Scope));
     if (!new_scope) {
@@ -567,6 +608,7 @@ void push_scope() {
     current_scope = new_scope;
 }
 
+// Remove o escopo atual (sair de bloco) e libera memória dos símbolos
 void pop_scope() {
     if (current_scope == NULL) return;
     Scope *old_scope = current_scope;
@@ -584,6 +626,7 @@ void pop_scope() {
     free(old_scope);
 }
 
+// Verifica se ID já existe no escopo *atual* (para evitar redeclaração)
 bool check_redeclaration(const char *id) {
     if (current_scope == NULL) return false;
     SymbolEntry *current = current_scope->head;
@@ -596,6 +639,7 @@ bool check_redeclaration(const char *id) {
     return false;
 }
 
+// Insere símbolo no escopo atual
 SymbolEntry* insert_symbol(const char *id, Tipo tipo) {
     if (current_scope == NULL) {
         yysemanticerror("Erro interno: Tentativa de inserir sem escopo ativo.", line, column);
@@ -616,6 +660,7 @@ SymbolEntry* insert_symbol(const char *id, Tipo tipo) {
     return new_entry;
 }
 
+// Busca símbolo em todos os escopos (do atual até o global)
 SymbolEntry* lookup_symbol(const char *id) {
     Scope *scope = current_scope;
     while (scope != NULL) {
@@ -631,6 +676,7 @@ SymbolEntry* lookup_symbol(const char *id) {
     return NULL;
 }
 
+// Exibe a tabela de símbolos recursivamente (do global para o local)
 void show_ts_recursive(Scope *scope) {
     if (!scope) return;
     show_ts_recursive(scope->prev);
@@ -643,23 +689,26 @@ void show_ts_recursive(Scope *scope) {
     }
 }
 
+// Wrapper para exibir a tabela completa
 void show_ts() {
     printf("\n\n=============== Tabela de Simbolos Completa ==============\n");
     show_ts_recursive(current_scope);
     printf("==========================================================\n");
 }
 
+// Reporta erro sintático
 void yyerror(char *s) {
     fprintf(stderr, "Erro Sintatico na Linha %d, Coluna %d: %s\n", line, column, s);
 }
 
+// Função Main: Configura arquivos e inicia o parser
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         fprintf(stderr, "Uso: %s <arquivo_entrada> [arquivo_saida]\n", argv[0]);
         return 1;
     }
 
-    init_table();
+    init_table(); // Cria escopo global
 
     yyin = fopen(argv[1], "r");
     if (!yyin) {
@@ -676,7 +725,7 @@ int main(int argc, char *argv[]) {
         return 3;
     }
 
-    yyparse(); 
+    yyparse(); // Roda o analisador
 
     printf("\nSucesso! Codigo intermediario gerado em: %s\n", nome_saida);
     show_ts();
