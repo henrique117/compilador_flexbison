@@ -5,6 +5,10 @@
     bool ativo = true;
     bool teste = false;
 
+/* Teste de Igualdade/Diferença (Aceita apenas INT) */
+    teste = x == 10;
+    teste = y != x;
+
     /* Teste de Aritmética (int op int) */
     x = x + y * 2;
     x = (y - 5) / 5;
@@ -61,3 +65,9 @@
 
     /* --- NOVO ERRO 8: Módulo inválido (int % bool) --- */
     numero = 10 % flag;
+
+    /* ERRO 9: Igualdade inválida (bool == bool) */ 
+    flag = true == false;
+
+    /* ERRO 10: Diferença inválida (bool != bool) */
+    flag = flag != true;
