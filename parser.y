@@ -93,6 +93,7 @@
 %token T_ATRIBUTION
 %token T_LEFT_PAREN T_RIGHT_PAREN T_LEFT_BRACKET T_RIGHT_BRACKET
 %token T_SEMICOLON T_COMMA
+%token T_MOD
 
 /* --- PRECEDÊNCIA CORRIGIDA --- */
 /* A ordem importa: IFX tem prioridade menor que ELSE */
@@ -104,7 +105,7 @@
 %nonassoc T_EQUAL T_NOT_EQUAL
 %nonassoc T_LESSER T_GREATER T_LESSER_EQUAL T_GREATER_EQUAL
 %left T_SUM T_MINUS
-%left T_MULT T_DIV
+%left T_MULT T_DIV T_MOD
 %right T_NOT UMINUS
 
 %%
@@ -326,6 +327,19 @@ expr:
         }
     }
     |
+    expr T_MOD expr {
+        if ($1.type == TIPO_INT && $3.type == TIPO_INT) { 
+            $$.type = TIPO_INT;
+            $$.addr = newTemp();
+            emit("MOD", $1.addr, $3.addr, $$.addr);
+        }
+        else {
+            if ($1.type != TIPO_UNDEFINED && $3.type != TIPO_UNDEFINED)
+                yysemanticerror("Operacao de RESTO (MOD) requer dois inteiros.", line, column);
+            $$.type = TIPO_UNDEFINED;
+        }
+    }
+    |
     expr T_AND expr {
         if ($1.type == TIPO_BOOL && $3.type == TIPO_BOOL) { 
             $$.type = TIPO_BOOL;
@@ -366,35 +380,27 @@ expr:
     }
     |
     expr T_EQUAL expr {
-        if ($1.type == $3.type) {
-            if ($1.type != TIPO_UNDEFINED) {
-                $$.type = TIPO_BOOL;
-                $$.addr = newTemp();
-                emit("EQ", $1.addr, $3.addr, $$.addr);
-            } else {
-                $$.type = TIPO_UNDEFINED;
-            }
+        if ($1.type == TIPO_INT && $3.type == TIPO_INT) {
+            $$.type = TIPO_BOOL;
+            $$.addr = newTemp();
+            emit("EQ", $1.addr, $3.addr, $$.addr);
         } 
         else {
             if ($1.type != TIPO_UNDEFINED && $3.type != TIPO_UNDEFINED)
-                yysemanticerror("Tipos incompativeis para comparacao (==).", line, column);
+                yysemanticerror("Operacao relacional (==) aceita apenas inteiros.", line, column);
             $$.type = TIPO_UNDEFINED;
         }
     }
     |
     expr T_NOT_EQUAL expr {
-        if ($1.type == $3.type) {
-            if ($1.type != TIPO_UNDEFINED) {
-                $$.type = TIPO_BOOL;
-                $$.addr = newTemp();
-                emit("NEQ", $1.addr, $3.addr, $$.addr);
-            } else {
-                $$.type = TIPO_UNDEFINED;
-            }
+        if ($1.type == TIPO_INT && $3.type == TIPO_INT) {
+            $$.type = TIPO_BOOL;
+            $$.addr = newTemp();
+            emit("NEQ", $1.addr, $3.addr, $$.addr);
         } 
         else {
             if ($1.type != TIPO_UNDEFINED && $3.type != TIPO_UNDEFINED)
-                yysemanticerror("Tipos incompativeis para comparacao (!=).", line, column);
+                yysemanticerror("Operacao relacional (!=) aceita apenas inteiros.", line, column);
             $$.type = TIPO_UNDEFINED;
         }
     }

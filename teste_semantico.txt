@@ -16,6 +16,10 @@
     /* (bool && bool) resulta em bool */
     ativo = teste && true;
 
+    /* Precedência: % tem prioridade sobre + */
+    /* Deve ser tratado como 2 + (10 % 3) = 3 */
+    resultado = 2 + 10 % 3;
+
     /* Teste de Comandos */
     if (ativo) {
         print(x);
@@ -54,3 +58,6 @@
 
     /* ERRO 7: Comparação Relacional inválida (bool > int) */
     flag = flag > numero;
+
+    /* --- NOVO ERRO 8: Módulo inválido (int % bool) --- */
+    numero = 10 % flag;

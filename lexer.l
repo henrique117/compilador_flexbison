@@ -117,6 +117,8 @@ error1      {digits}({letters}|[_])+
 "+" { column++; return T_SUM; }
 "-" { column++; return T_MINUS; }
 
+"%" { column++; return T_MOD; }
+
 "==" { column += yyleng; return T_EQUAL; }
 "!=" { column += yyleng; return T_NOT_EQUAL; }
 "<=" { column += yyleng; return T_LESSER_EQUAL; }
