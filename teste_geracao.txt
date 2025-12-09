@@ -1,0 +1,19 @@
+int a = 10;
+int b = 20;
+int soma = 0;
+
+print(a);
+print(b);
+
+if (a < b) {
+    soma = a + b;
+    print(soma);
+} else {
+    print(0);
+}
+
+int contador = 0;
+while (contador < 5) {
+    print(contador);
+    contador = contador + 1;
+}
