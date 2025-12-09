@@ -16,6 +16,7 @@
     void yyerror(char *s);
 %}
 
+/* Tipos visíveis no .h e no .c */
 %code requires {
     typedef enum { TIPO_INT, TIPO_BOOL, TIPO_UNDEFINED } Tipo;
 
@@ -38,6 +39,7 @@
     } Scope;
 }
 
+/* Variáveis Globais e Protótipos */
 %code {
     FILE *arquivo_saida = NULL; 
 
@@ -92,6 +94,11 @@
 %token T_LEFT_PAREN T_RIGHT_PAREN T_LEFT_BRACKET T_RIGHT_BRACKET
 %token T_SEMICOLON T_COMMA
 
+/* --- PRECEDÊNCIA CORRIGIDA --- */
+/* A ordem importa: IFX tem prioridade menor que ELSE */
+%nonassoc IFX
+%nonassoc T_ELSE
+
 %left T_OR
 %left T_AND
 %nonassoc T_EQUAL T_NOT_EQUAL
@@ -125,129 +132,90 @@ compound_stmt:
     T_LEFT_BRACKET { push_scope(); } optional_stmt_list T_RIGHT_BRACKET { pop_scope(); }
     ;
 
-stmt:
-    matched_stmt
-    | open_stmt
-    |
-    error T_SEMICOLON {
-        yyerror("-> Expressao ou atribuicao mal formada\n");
-        yyerrok;
-    }
-    ;
+/* --- AUXILIARES PARA EVITAR CONFLITOS E ARRIMAR A GERAÇÃO DE CÓDIGO --- */
 
-matched_stmt:
-    simple_stmt
-    | compound_stmt
-    |
+/* 1. Cabeçalho do IF: Processa a condição, gera o pulo para o Falso */
+if_head:
     T_IF T_LEFT_PAREN expr T_RIGHT_PAREN 
-    { 
+    {
         if ($3.type != TIPO_BOOL && $3.type != TIPO_UNDEFINED){
             yysemanticerror("A condicao do IF deve ser do tipo booleano.", line, column);
         }
         char *L_false = newLabel();
-        char *L_end = newLabel();
         emit("IF_FALSE", $3.addr, NULL, L_false);
-        push_label(L_end);   
-        push_label(L_false); 
+        push_label(L_false); // Empilha para usar no fim do bloco ou no else
     }
-    matched_stmt 
-    T_ELSE 
-    {
-        char *L_false = pop_label();
-        char *L_end = pop_label();
-        emit("GOTO", NULL, NULL, L_end); 
-        emitLabel(L_false);              
-        push_label(L_end);               
-    }
-    matched_stmt 
-    {
-        char *L_end = pop_label();
-        emitLabel(L_end);
-    }
-    | error T_ELSE matched_stmt {
-        yyerror("-> 'else' sem 'if' previamente\n");
-        yyerrok;
-    }
-    | T_WHILE T_LEFT_PAREN 
+    ;
+
+/* 2. Inicio do While: Marca o Label de retorno */
+while_start:
+    T_WHILE 
     {
         char *L_start = newLabel();
         emitLabel(L_start);
         push_label(L_start);
     }
-    expr T_RIGHT_PAREN 
+    ;
+
+/* 3. Condição do While: Testa e pula pro fim se falso */
+while_cond:
+    T_LEFT_PAREN expr T_RIGHT_PAREN 
     {
-        if ($4.type != TIPO_BOOL && $4.type != TIPO_UNDEFINED){
+        if ($2.type != TIPO_BOOL && $2.type != TIPO_UNDEFINED){
             yysemanticerror("A condicao do WHILE deve ser do tipo booleano.", line, column);
         }
         char *L_end = newLabel();
-        emit("IF_FALSE", $4.addr, NULL, L_end);
+        emit("IF_FALSE", $2.addr, NULL, L_end);
         push_label(L_end);
     }
-    matched_stmt
-    {
-        char *L_end = pop_label();
-        char *L_start = pop_label();
-        emit("GOTO", NULL, NULL, L_start);
-        emitLabel(L_end);
-    }
-    | T_WHILE T_LEFT_PAREN expr error matched_stmt {
-        yyerror("-> Detectado ')' ausente na formacao de 'while'\n");
-        yyerrok;
-    }
-    | T_WHILE error expr T_RIGHT_PAREN matched_stmt {
-        yyerror("-> Detectado '(' ausente na formacao de 'while'\n");
+    ;
+
+
+/* --- REGRA PRINCIPAL DE COMANDOS --- */
+stmt:
+    simple_stmt
+    | compound_stmt
+    
+    /* Estrutura IF SEM ELSE */
+    | if_head stmt %prec IFX 
+      {
+          char *L_false = pop_label();
+          emitLabel(L_false);
+      }
+      
+    /* Estrutura IF COM ELSE */
+    | if_head stmt T_ELSE 
+      {
+          /* Chegamos ao fim do 'then', precisamos pular o 'else' */
+          char *L_false = pop_label(); // O label que marcava o início do else
+          char *L_end = newLabel();    // Novo label para o fim total
+          
+          emit("GOTO", NULL, NULL, L_end); // Pula o else
+          emitLabel(L_false);              // Começa o else
+          push_label(L_end);               // Guarda o fim total
+      }
+      stmt 
+      {
+          char *L_end = pop_label();
+          emitLabel(L_end);
+      }
+
+    /* Estrutura WHILE */
+    | while_start while_cond stmt 
+      {
+          char *L_end = pop_label();
+          char *L_start = pop_label();
+          emit("GOTO", NULL, NULL, L_start); // Volta para testar
+          emitLabel(L_end);                  // Sai do loop
+      }
+
+    /* Tratamento de Erros de Sintaxe */
+    | error T_SEMICOLON {
+        yyerror("-> Erro: Ponto e virgula inesperado ou comando mal formado\n");
         yyerrok;
     }
     ;
 
-open_stmt:
-    T_IF T_LEFT_PAREN expr T_RIGHT_PAREN 
-    {
-        if ($3.type != TIPO_BOOL && $3.type != TIPO_UNDEFINED){
-            yysemanticerror("A condicao do IF deve ser do tipo booleano.", line, column);
-        }
-        char *L_end = newLabel(); 
-        emit("IF_FALSE", $3.addr, NULL, L_end);
-        push_label(L_end);
-    }
-    stmt 
-    {
-        char *L_end = pop_label();
-        emitLabel(L_end);
-    }
-    | T_IF T_LEFT_PAREN expr T_RIGHT_PAREN 
-    {
-        if ($3.type != TIPO_BOOL && $3.type != TIPO_UNDEFINED){
-            yysemanticerror("A condicao do IF deve ser do tipo booleano.", line, column);
-        }
-        char *L_false = newLabel();
-        char *L_end = newLabel();
-        emit("IF_FALSE", $3.addr, NULL, L_false);
-        push_label(L_end);
-        push_label(L_false);
-    }
-    matched_stmt T_ELSE 
-    {
-        char *L_false = pop_label();
-        char *L_end = pop_label();
-        emit("GOTO", NULL, NULL, L_end);
-        emitLabel(L_false);
-        push_label(L_end);
-    }
-    open_stmt
-    {
-        char *L_end = pop_label();
-        emitLabel(L_end);
-    }
-    | T_IF T_LEFT_PAREN expr error stmt {
-        yyerror("-> Detectado ')' ausente no 'if'\n");
-        yyerrok;
-    }
-    | T_IF error expr T_RIGHT_PAREN stmt {
-        yyerror("-> Detectado '(' ausente no 'if'\n");
-        yyerrok;
-    }
-    ;
 
 simple_stmt:
     T_BOOLEAN T_ID T_ATRIBUTION expr T_SEMICOLON {

@@ -1,11 +1,11 @@
 @echo off
 
 echo 1. Gerando o Parser (Bison)...
-bison -d parser.y
+win_bison -d parser.y
 
 echo.
 echo 2. Gerando o Lexer (Flex)...
-flex lexer.l
+win_flex lexer.l
 
 echo.
 echo 3. Compilando e Linkando (GCC)...
